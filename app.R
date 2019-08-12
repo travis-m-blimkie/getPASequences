@@ -1,29 +1,49 @@
 
-# Load libraries ----------------------------------------------------------
+# Load libraries and data -------------------------------------------------
 
 library(shiny)
+library(shinythemes)
 library(tidyverse)
 
+pa14Data <- readRDS("data/PA14_geneInfo_withAASeqs.Rds")
 
-# Define UI for application that draws a histogram
+
+# Define the UI elements --------------------------------------------------
+
 ui <- fluidPage(
 
-    # Application title
-    titlePanel("Old Faithful Geyser Data"),
+    theme = shinytheme("flatly"),
 
-    # Sidebar with a slider input for number of bins
+    # Application title
+    titlePanel("Retreive P. aeruginosa Sequences"),
+
+
     sidebarLayout(
+
         sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
+
+            textAreaInput("pastedInput",
+                          "Paste your list of locus tags, one per line:",
+                          height = "300px")
         ),
 
-        # Show a plot of the generated distribution
+        # TODO Add download information
+        # downloadButton("")
+
+
         mainPanel(
-           plotOutput("distPlot")
+
+            h3("Output:"),
+            dataTableOutput("genesAndSeqs")
+
+            # Hidden display for user-input genes
+            # tags$br(),
+            # tags$br(),
+            # tags$br(),
+            #
+            # h3("Input Genes:"),
+            # dataTableOutput("usersGenes")
+
         )
     )
 )
@@ -31,15 +51,42 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
 
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white')
+    myGenes <- reactive({
+        req(input$pastedInput)
+        str_extract_all(input$pastedInput, pattern = "PA14_[0-9]{5}")
     })
+
+    myGenesTable <- reactive({
+        part1 <- data.frame(Genes = myGenes())
+        colnames(part1) <- "Locus_Tag"
+        return(part1)
+    })
+
+    filteredTable <- reactive({
+        left_join(myGenesTable(), pa14Data, by = "Locus_Tag")
+    })
+
+
+
+    displayTable <- reactive({
+        select(filteredTable(), -c(Amino_Acid_Sequence))
+    })
+
+    output$genesAndSeqs <- renderDataTable({
+        displayTable()
+    }, options = list(searching = FALSE, pageLength = 10))
+
+
+    # TODO Add download information
+
+    # Hidden display of user-input genes
+    # output$usersGenes <- renderDataTable({
+    #     myGenesTable()
+    # }, options = list(searching = FALSE, pageLength = 10))
+
+
 }
+
 
 # Run the application
 shinyApp(ui = ui, server = server)
