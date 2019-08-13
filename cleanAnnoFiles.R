@@ -2,7 +2,7 @@
 library(tidyverse)
 
 
-fileNames <- list.files("../Downloads/", pattern = ".txt$")
+fileNames <- list.files("./", pattern = ".txt$")
 
 
 varNames <- fileNames %>% 
@@ -10,7 +10,7 @@ varNames <- fileNames %>%
 
 
 myFiles <- fileNames %>% 
-  map(~read_tsv(paste0("../Downloads/", .), comment = "#")) %>% 
+  map(~read_tsv(paste0("./", .), comment = "#")) %>% 
   set_names(varNames)
 
 
