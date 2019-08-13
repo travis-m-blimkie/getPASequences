@@ -8,6 +8,7 @@ library(tidyverse)
 pa14Data <- readRDS("data/PA14_geneInfo_withAASeqs.Rds")
 
 
+
 # Define the UI elements --------------------------------------------------
 
 ui <- fluidPage(
@@ -22,9 +23,22 @@ ui <- fluidPage(
 
         sidebarPanel(
 
+            # Dropdown to pick strain
+            selectInput(
+                "strainChoice",
+                "Please select your strain:",
+                c("PAO1" = "PAO1",
+                  "PA14" = "PA14",
+                  "LESB58" = "LESB58")
+                ),
+
+            # Place to paste your genes of interest
             textAreaInput("pastedInput",
                           "Paste your list of locus tags, one per line:",
-                          height = "300px")
+                          height = "300px"),
+
+            # Button which triggers results to display
+            actionButton("search", "Search")
         ),
 
         # TODO Add download information
@@ -34,7 +48,7 @@ ui <- fluidPage(
         mainPanel(
 
             h3("Output:"),
-            dataTableOutput("genesAndSeqs")
+            dataTableOutput("displayTable")
 
             # Hidden display for user-input genes
             # tags$br(),
@@ -48,33 +62,54 @@ ui <- fluidPage(
     )
 )
 
-# Define server logic required to draw a histogram
+
+
+
+# Define the server logic -------------------------------------------------
+
 server <- function(input, output) {
 
+
+    # Extract the genes to be mapped
     myGenes <- reactive({
+
         req(input$pastedInput)
-        str_extract_all(input$pastedInput, pattern = "PA14_[0-9]{5}")
+
+        if (input$strainChoice == "PA14") {
+            str_extract_all(input$pastedInput, pattern = "PA14_[0-9]{5}")
+        }
     })
 
+
+    # Convert to a data frame, and fix column name
     myGenesTable <- reactive({
-        part1 <- data.frame(Genes = myGenes())
+
+        part1 <- data.frame(Genes = myGenes(), stringsAsFactors = FALSE)
         colnames(part1) <- "Locus_Tag"
+
         return(part1)
     })
 
+
+    # Map the input genes
     filteredTable <- reactive({
         left_join(myGenesTable(), pa14Data, by = "Locus_Tag")
     })
 
 
-
+    # Create table without sequence to facilitate display
     displayTable <- reactive({
         select(filteredTable(), -c(Amino_Acid_Sequence))
     })
 
-    output$genesAndSeqs <- renderDataTable({
-        displayTable()
-    }, options = list(searching = FALSE, pageLength = 10))
+
+    observeEvent(input$search, {
+
+        output$displayTable <- renderDataTable({
+            displayTable()
+        }, options = list(searching = FALSE))
+
+    })
 
 
     # TODO Add download information
