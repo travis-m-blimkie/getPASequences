@@ -1,11 +1,16 @@
 
+# TODO Add download information in ui and server sections
+
+
 # Load libraries and data -------------------------------------------------
 
 library(shiny)
 library(shinythemes)
 library(tidyverse)
 
-pa14Data <- readRDS("data/PA14_geneInfo_withAASeqs.Rds")
+pao1Data <- readRDS("data/Pseudomonas_aeruginosa_PAO1_107.Rds")
+pa14Data <- readRDS("data/Pseudomonas_aeruginosa_UCBPP-PA14_109.Rds")
+lesb58Data <- readRDS("data/Pseudomonas_aeruginosa_LESB58_125.Rds")
 
 
 
@@ -16,8 +21,9 @@ ui <- fluidPage(
     theme = shinytheme("flatly"),
 
     # Application title
-    titlePanel("Retreive P. aeruginosa Sequences"),
+    titlePanel(div(HTML("Retreive <em>P. aeruginosa</em> Sequences"))),
 
+    tags$br(),
 
     sidebarLayout(
 
@@ -41,10 +47,6 @@ ui <- fluidPage(
             actionButton("search", "Search")
         ),
 
-        # TODO Add download information
-        # downloadButton("")
-
-
         mainPanel(
 
             h3("Output:"),
@@ -57,7 +59,6 @@ ui <- fluidPage(
             #
             # h3("Input Genes:"),
             # dataTableOutput("usersGenes")
-
         )
     )
 )
@@ -70,19 +71,30 @@ ui <- fluidPage(
 server <- function(input, output) {
 
 
-    # Extract the genes to be mapped
+# Extract the genes to be mapped, dependent on chosen strain
     myGenes <- reactive({
 
         req(input$pastedInput)
 
-        if (input$strainChoice == "PA14") {
+        if (input$strainChoice == "PAO1") {
+            str_extract_all(input$pastedInput, pattern = "PA[0-9]{4}")
+
+        } else if (input$strainChoice == "PA14") {
             str_extract_all(input$pastedInput, pattern = "PA14_[0-9]{5}")
+
+        } else if (input$strainChoice == "LESB58") {
+            str_extract_all(input$pastedInput, pattern = "PALES_[0-9]{5}")
+
+        } else {
+            return(NULL)
         }
     })
 
 
     # Convert to a data frame, and fix column name
     myGenesTable <- reactive({
+
+        req(myGenes())
 
         part1 <- data.frame(Genes = myGenes(), stringsAsFactors = FALSE)
         colnames(part1) <- "Locus_Tag"
@@ -91,37 +103,46 @@ server <- function(input, output) {
     })
 
 
-    # Map the input genes
+    # Map the input genes, dependent on strain
     filteredTable <- reactive({
-        left_join(myGenesTable(), pa14Data, by = "Locus_Tag")
+
+        if (input$strainChoice == "PAO1") {
+            inner_join(myGenesTable(), pao1Data, by = "Locus_Tag")
+
+        } else if (input$strainChoice == "PA14") {
+            inner_join(myGenesTable(), pa14Data, by = "Locus_Tag")
+
+        } else if (input$strainChoice == "LESB58") {
+            inner_join(myGenesTable(), lesb58Data,  by = "Locus_Tag")
+
+        } else {
+            return(NULL)
+        }
     })
 
 
     # Create table without sequence to facilitate display
     displayTable <- reactive({
-        select(filteredTable(), -c(Amino_Acid_Sequence))
+
+        select(filteredTable(), -c(Nucleotide_Sequence, Amino_Acid_Sequence)) %>%
+            arrange(Locus_Tag)
     })
 
 
-    observeEvent(input$search, {
+    # Wait until the "Search" button is clicked before rendering output
+    observeEvent(
+
+        input$search, {
 
         output$displayTable <- renderDataTable({
-            displayTable()
+            isolate(displayTable())
         }, options = list(searching = FALSE))
-
     })
-
-
-    # TODO Add download information
-
-    # Hidden display of user-input genes
-    # output$usersGenes <- renderDataTable({
-    #     myGenesTable()
-    # }, options = list(searching = FALSE, pageLength = 10))
-
-
 }
 
 
-# Run the application
-shinyApp(ui = ui, server = server)
+
+
+# Run the app -------------------------------------------------------------
+
+shinyApp(ui, server)
