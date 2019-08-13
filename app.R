@@ -67,7 +67,7 @@ ui <- fluidPage(
             # Download button for annotation table
             disabled(downloadButton(
                 "resultTable",
-                "Download Annotations",
+                "Download Results Table",
                 style = "color: #fff; background-color: #337ab7; border-color: #337ab7"
             )),
 
@@ -191,7 +191,13 @@ server <- function(input, output) {
             content = function(file) {
                 write.fasta(
                     as.list(filteredTable()$Nucleotide_Sequence),
-                    names = filteredTable()$Locus_Tag,
+                    names = paste0(
+                        filteredTable()$Locus_Tag,
+                        " | ",
+                        filteredTable()$Name,
+                        "; ",
+                        filteredTable()$Product_Name
+                        ),
                     file.out = file
                     )
             }
@@ -207,7 +213,13 @@ server <- function(input, output) {
             content = function(file) {
                 write.fasta(
                     as.list(filteredTable()$Amino_Acid_Sequence),
-                    names = filteredTable()$Locus_Tag,
+                    names = paste0(
+                        filteredTable()$Locus_Tag,
+                        " | ",
+                        filteredTable()$Name,
+                        "; ",
+                        filteredTable()$Product_Name
+                        ),
                     file.out = file
                     )
             }
