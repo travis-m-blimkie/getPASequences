@@ -1,45 +1,148 @@
 
-# Load libraries ----------------------------------------------------------
+# TODO Add download information in ui and server sections
+
+
+# Load libraries and data -------------------------------------------------
 
 library(shiny)
+library(shinythemes)
 library(tidyverse)
 
+pao1Data <- readRDS("data/Pseudomonas_aeruginosa_PAO1_107.Rds")
+pa14Data <- readRDS("data/Pseudomonas_aeruginosa_UCBPP-PA14_109.Rds")
+lesb58Data <- readRDS("data/Pseudomonas_aeruginosa_LESB58_125.Rds")
 
-# Define UI for application that draws a histogram
+
+
+# Define the UI elements --------------------------------------------------
+
 ui <- fluidPage(
 
-    # Application title
-    titlePanel("Old Faithful Geyser Data"),
+    theme = shinytheme("flatly"),
 
-    # Sidebar with a slider input for number of bins
+    # Application title
+    titlePanel(div(HTML("Retreive <em>P. aeruginosa</em> Sequences"))),
+
+    tags$br(),
+
     sidebarLayout(
+
         sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
+
+            # Dropdown to pick strain
+            selectInput(
+                "strainChoice",
+                "Please select your strain:",
+                c("PAO1" = "PAO1",
+                  "PA14" = "PA14",
+                  "LESB58" = "LESB58")
+                ),
+
+            # Place to paste your genes of interest
+            textAreaInput("pastedInput",
+                          "Paste your list of locus tags, one per line:",
+                          height = "300px"),
+
+            # Button which triggers results to display
+            actionButton("search", "Search")
         ),
 
-        # Show a plot of the generated distribution
         mainPanel(
-           plotOutput("distPlot")
+
+            h3("Output:"),
+            dataTableOutput("displayTable")
+
+            # Hidden display for user-input genes
+            # tags$br(),
+            # tags$br(),
+            # tags$br(),
+            #
+            # h3("Input Genes:"),
+            # dataTableOutput("usersGenes")
         )
     )
 )
 
-# Define server logic required to draw a histogram
+
+
+
+# Define the server logic -------------------------------------------------
+
 server <- function(input, output) {
 
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
 
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white')
+# Extract the genes to be mapped, dependent on chosen strain
+    myGenes <- reactive({
+
+        req(input$pastedInput)
+
+        if (input$strainChoice == "PAO1") {
+            str_extract_all(input$pastedInput, pattern = "PA[0-9]{4}")
+
+        } else if (input$strainChoice == "PA14") {
+            str_extract_all(input$pastedInput, pattern = "PA14_[0-9]{5}")
+
+        } else if (input$strainChoice == "LESB58") {
+            str_extract_all(input$pastedInput, pattern = "PALES_[0-9]{5}")
+
+        } else {
+            return(NULL)
+        }
+    })
+
+
+    # Convert to a data frame, and fix column name
+    myGenesTable <- reactive({
+
+        req(myGenes())
+
+        part1 <- data.frame(Genes = myGenes(), stringsAsFactors = FALSE)
+        colnames(part1) <- "Locus_Tag"
+
+        return(part1)
+    })
+
+
+    # Map the input genes, dependent on strain
+    filteredTable <- reactive({
+
+        if (input$strainChoice == "PAO1") {
+            inner_join(myGenesTable(), pao1Data, by = "Locus_Tag")
+
+        } else if (input$strainChoice == "PA14") {
+            inner_join(myGenesTable(), pa14Data, by = "Locus_Tag")
+
+        } else if (input$strainChoice == "LESB58") {
+            inner_join(myGenesTable(), lesb58Data,  by = "Locus_Tag")
+
+        } else {
+            return(NULL)
+        }
+    })
+
+
+    # Create table without sequence to facilitate display
+    displayTable <- reactive({
+
+        select(filteredTable(), -c(Nucleotide_Sequence, Amino_Acid_Sequence)) %>%
+            arrange(Locus_Tag)
+    })
+
+
+    # Wait until the "Search" button is clicked before rendering output
+    observeEvent(
+
+        input$search, {
+
+        output$displayTable <- renderDataTable({
+            isolate(displayTable())
+        }, options = list(searching = FALSE))
     })
 }
 
-# Run the application
-shinyApp(ui = ui, server = server)
+
+
+
+# Run the app -------------------------------------------------------------
+
+shinyApp(ui, server)
