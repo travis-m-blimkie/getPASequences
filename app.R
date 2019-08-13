@@ -1,11 +1,14 @@
 
 # TODO Add download information in ui and server sections
+# TODO Add message if strain and IDs don't match (i.e. 0 rows in table)
+# TODO disable download buttons until data is ready
 
 
 # Load libraries and data -------------------------------------------------
 
 library(shiny)
 library(shinythemes)
+library(shinyjs)
 library(tidyverse)
 
 pao1Data <- readRDS("data/Pseudomonas_aeruginosa_PAO1_107.Rds")
@@ -19,6 +22,9 @@ lesb58Data <- readRDS("data/Pseudomonas_aeruginosa_LESB58_125.Rds")
 ui <- fluidPage(
 
     theme = shinytheme("flatly"),
+
+    # Enable shinyjs usage
+    shinyjs::useShinyjs(),
 
     # Application title
     titlePanel(div(HTML("Retreive <em>P. aeruginosa</em> Sequences"))),
@@ -38,27 +44,36 @@ ui <- fluidPage(
                   "LESB58" = "LESB58")
                 ),
 
-            # Place to paste your genes of interest
-            textAreaInput("pastedInput",
-                          "Paste your list of locus tags, one per line:",
-                          height = "300px"),
 
-            # Button which triggers results to display
-            actionButton("search", "Search")
+            # Place to paste your genes of interest
+            textAreaInput(
+                "pastedInput",
+                "Paste your list of locus tags, one per line:",
+                height = "300px"
+                ),
+
+
+            # Button which triggers results to display. "background-color"
+            # defines the colour of the button (default #337ab7)
+            actionButton(
+                inputId = "search",
+                label   = "Search",
+                icon    = icon("search"),
+                style   = "color: #fff; background-color: #18bc9c; border-color: #18bc9c"
+                ),
+
+            tags$br(),
+            tags$br(),
+
+            disabled(downloadButton(
+                "resultTable",
+                "Download Annotations",
+                style = "color: #fff; background-color: #337ab7; border-color: #337ab7"))
         ),
 
         mainPanel(
 
-            h3("Output:"),
             dataTableOutput("displayTable")
-
-            # Hidden display for user-input genes
-            # tags$br(),
-            # tags$br(),
-            # tags$br(),
-            #
-            # h3("Input Genes:"),
-            # dataTableOutput("usersGenes")
         )
     )
 )
@@ -71,72 +86,86 @@ ui <- fluidPage(
 server <- function(input, output) {
 
 
-# Extract the genes to be mapped, dependent on chosen strain
-    myGenes <- reactive({
+    # Extract the genes to be mapped, dependent on chosen strain. Delay all code
+    # until the search button is pressed
+    observeEvent(input$search, {
 
-        req(input$pastedInput)
+        myGenes <- reactive({
 
-        if (input$strainChoice == "PAO1") {
-            str_extract_all(input$pastedInput, pattern = "PA[0-9]{4}")
+            req(input$pastedInput)
 
-        } else if (input$strainChoice == "PA14") {
-            str_extract_all(input$pastedInput, pattern = "PA14_[0-9]{5}")
+            if (input$strainChoice == "PAO1") {
+                str_extract_all(input$pastedInput, pattern = "PA[0-9]{4}")
 
-        } else if (input$strainChoice == "LESB58") {
-            str_extract_all(input$pastedInput, pattern = "PALES_[0-9]{5}")
+            } else if (input$strainChoice == "PA14") {
+                str_extract_all(input$pastedInput, pattern = "PA14_[0-9]{5}")
 
-        } else {
-            return(NULL)
-        }
-    })
+            } else if (input$strainChoice == "LESB58") {
+                str_extract_all(input$pastedInput, pattern = "PALES_[0-9]{5}")
 
-
-    # Convert to a data frame, and fix column name
-    myGenesTable <- reactive({
-
-        req(myGenes())
-
-        part1 <- data.frame(Genes = myGenes(), stringsAsFactors = FALSE)
-        colnames(part1) <- "Locus_Tag"
-
-        return(part1)
-    })
+            } else {
+                return(NULL)
+            }
+        })
 
 
-    # Map the input genes, dependent on strain
-    filteredTable <- reactive({
+        # Convert to a data frame, and fix column name
+        myGenesTable <- reactive({
 
-        if (input$strainChoice == "PAO1") {
-            inner_join(myGenesTable(), pao1Data, by = "Locus_Tag")
+            req(myGenes())
 
-        } else if (input$strainChoice == "PA14") {
-            inner_join(myGenesTable(), pa14Data, by = "Locus_Tag")
+            part1 <- data.frame(Genes = myGenes(), stringsAsFactors = FALSE)
+            colnames(part1) <- "Locus_Tag"
 
-        } else if (input$strainChoice == "LESB58") {
-            inner_join(myGenesTable(), lesb58Data,  by = "Locus_Tag")
-
-        } else {
-            return(NULL)
-        }
-    })
+            return(part1)
+        })
 
 
-    # Create table without sequence to facilitate display
-    displayTable <- reactive({
+        # Map the input genes, dependent on strain
+        filteredTable <- reactive({
 
-        select(filteredTable(), -c(Nucleotide_Sequence, Amino_Acid_Sequence)) %>%
-            arrange(Locus_Tag)
-    })
+            req(myGenesTable(), input$strainChoice)
+
+            if (input$strainChoice == "PAO1") {
+                inner_join(myGenesTable(), pao1Data, by = "Locus_Tag")
+
+            } else if (input$strainChoice == "PA14") {
+                inner_join(myGenesTable(), pa14Data, by = "Locus_Tag")
+
+            } else if (input$strainChoice == "LESB58") {
+                inner_join(myGenesTable(), lesb58Data,  by = "Locus_Tag")
+
+            } else {
+                return(NULL)
+            }
+        })
 
 
-    # Wait until the "Search" button is clicked before rendering output
-    observeEvent(
+        # Create table without sequence to facilitate display
+        displayTable <- reactive({
 
-        input$search, {
+            select(filteredTable(), -c(Nucleotide_Sequence, Amino_Acid_Sequence)) %>%
+                arrange(Locus_Tag)
+        })
 
+
+        # Render the table of results
         output$displayTable <- renderDataTable({
             isolate(displayTable())
         }, options = list(searching = FALSE))
+
+
+        # Download button for displayTable
+        enable("resultTable")
+        output$resultTable <- downloadHandler(
+            filename = function() {
+                paste0(input$strainChoice, "_annotations.csv")
+            },
+            content = function(file) {
+                write.csv(displayTable(), file, row.names = FALSE, quote = FALSE)
+            })
+
+
     })
 }
 
