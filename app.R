@@ -2,6 +2,8 @@
 # TODO Add message/notification if str_extract_all() yeilds no IDs aka input IDs
 # are not in the proper format
 
+# TODO How should missing input IDs be handled?
+
 
 # Load libraries and data -------------------------------------------------
 
@@ -92,6 +94,7 @@ ui <- fluidPage(
 
         mainPanel(
 
+            h3("Your results will be displayed below:"),
             dataTableOutput("displayTable")
         )
     )
@@ -103,6 +106,13 @@ ui <- fluidPage(
 # Define the server logic -------------------------------------------------
 
 server <- function(input, output) {
+
+    # Display notification bubble when users pastes IDs. ignoreInit = TRUE
+    # prevents the dialog from displaying when app is started
+    observeEvent(input$pastedInput, {
+        showNotification("Hit the Search button to get your results.",
+                         type = "message")
+    }, ignoreInit = TRUE)
 
 
     # Delay all code until the search button is pressed
@@ -128,7 +138,7 @@ server <- function(input, output) {
         })
 
 
-        # Convert to a data frame, and fix column name
+        # Convert to a data frame, and fix column name for easy joining later
         myGenesTable <- reactive({
             req(myGenes())
 
@@ -166,8 +176,8 @@ server <- function(input, output) {
         })
 
 
-        # Render the table of results, prevent updating when input IDs are
-        # changed until the search button is pressed again
+        # Render the table of results; prevent updating the results table when
+        # input IDs are changed until the search button is pressed again
         output$displayTable <- renderDataTable({
             isolate(displayTable())
         }, options = list(searching = FALSE))
@@ -226,8 +236,6 @@ server <- function(input, output) {
                     )
             }
         )
-
-
     })
 }
 
