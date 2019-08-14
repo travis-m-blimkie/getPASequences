@@ -1,5 +1,6 @@
 
-# TODO Add message if strain and IDs don't match (i.e. 0 rows in table)
+# TODO Add message/notification if str_extract_all() yeilds no IDs aka input IDs
+# are not in the proper format
 
 
 # Load libraries and data -------------------------------------------------
@@ -75,7 +76,8 @@ ui <- fluidPage(
             tags$br(),
             tags$br(),
 
-            # Download button for nucleotide sequences
+            # Download button for nucleotide sequences, disabled until data is
+            # available
             disabled(downloadButton(
                 "ntSeqs",
                 "Nucleotide Sequences"
@@ -103,12 +105,12 @@ ui <- fluidPage(
 server <- function(input, output) {
 
 
-    # Extract the genes to be mapped, dependent on chosen strain. Delay all code
-    # until the search button is pressed
+    # Delay all code until the search button is pressed
     observeEvent(input$search, {
 
-        myGenes <- reactive({
 
+        # Extract the genes to be mapped, dependent on chosen strain
+        myGenes <- reactive({
             req(input$pastedInput)
 
             if (input$strainChoice == "PAO1") {
@@ -128,7 +130,6 @@ server <- function(input, output) {
 
         # Convert to a data frame, and fix column name
         myGenesTable <- reactive({
-
             req(myGenes())
 
             part1 <- data.frame(Genes = myGenes(), stringsAsFactors = FALSE)
@@ -140,7 +141,6 @@ server <- function(input, output) {
 
         # Map the input genes, dependent on strain
         filteredTable <- reactive({
-
             req(myGenesTable(), input$strainChoice)
 
             if (input$strainChoice == "PAO1") {
@@ -166,7 +166,8 @@ server <- function(input, output) {
         })
 
 
-        # Render the table of results
+        # Render the table of results, prevent updating when input IDs are
+        # changed until the search button is pressed again
         output$displayTable <- renderDataTable({
             isolate(displayTable())
         }, options = list(searching = FALSE))
@@ -233,6 +234,6 @@ server <- function(input, output) {
 
 
 
-# Run the app -------------------------------------------------------------
+# Run the app! ------------------------------------------------------------
 
 shinyApp(ui, server)
