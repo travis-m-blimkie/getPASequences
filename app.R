@@ -26,7 +26,8 @@ ui <- fluidPage(
     shinyjs::useShinyjs(),
 
     # Application title
-    titlePanel(div(HTML("Retreive <em>P. aeruginosa</em> Sequences"))),
+    titlePanel(div(HTML("Retreive <em>P. aeruginosa</em> Sequences")),
+               windowTitle = "Retreive P. aeruginosa Sequences"),
 
     tags$br(),
 
