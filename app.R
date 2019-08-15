@@ -1,5 +1,10 @@
 
-# TODO Add message if strain and IDs don't match (i.e. 0 rows in table)
+# TODO Add message/notification if str_extract_all() yeilds no IDs aka input IDs
+# are not in the proper format
+
+# TODO How should missing input IDs be handled?
+
+# TODO change showNotification() on gene paste to renderUI (like in metabridge)
 
 
 # Load libraries and data -------------------------------------------------
@@ -26,13 +31,29 @@ ui <- fluidPage(
     shinyjs::useShinyjs(),
 
     # Application title
-    titlePanel(div(HTML("Retreive <em>P. aeruginosa</em> Sequences"))),
+    titlePanel(div(HTML("Retreive <em>P. aeruginosa</em> Annotations and Sequences")),
+               windowTitle = "getPASequences"),
 
     tags$br(),
 
     sidebarLayout(
 
         sidebarPanel(
+
+            tags$p(div(HTML(
+                "This app is designed to retreive annotations, nucleotide, and ",
+                "amino acid sequences for three strains of <em>P. aeruginosa</em>,",
+                "namely PAO1, PA14, and LESB58."
+                ))),
+
+            tags$p(div(HTML(
+                "<b>NOTE:</b> Currently non-matching genes are NOT returned to the user, ",
+                "and there is no warning when this occurs. Please check the ",
+                "number of results compared to your number of inputs to ensure ",
+                "no genes went missing."
+            ))),
+
+            tags$br(),
 
             # Dropdown to pick strain
             selectInput(
@@ -58,7 +79,7 @@ ui <- fluidPage(
                 inputId = "search",
                 label   = "Search",
                 icon    = icon("search"),
-                style   = "color: #fff; background-color: #18bc9c; border-color: #18bc9c"
+                style   = "color: #fff; background-color: #18bc9c; border-color: #18bc9c; width: 207.5px"
             ),
 
             tags$br(),
@@ -68,27 +89,34 @@ ui <- fluidPage(
             disabled(downloadButton(
                 "resultTable",
                 "Download Results Table",
-                style = "color: #fff; background-color: #337ab7; border-color: #337ab7"
+                style = "color: #fff; background-color: #337ab7; border-color: #337ab7; width: 415px"
             )),
 
             tags$br(),
             tags$br(),
 
-            # Download button for nucleotide sequences
+            # Download button for nucleotide sequences, disabled until data is
+            # available
             disabled(downloadButton(
                 "ntSeqs",
-                "Nucleotide Sequences"
+                "Nucleotide Sequences",
+                style = "width: 200px; background-color: #2c3e50; border-color: #2c3e50"
             )),
+
+            div(style = "display: inline-block; vertical-align: top; width: 10px;", HTML("<br>")),
 
             # Download button for amino acid sequences
             disabled(downloadButton(
                 "aaSeqs",
-                "Protein Sequences"
+                "Protein Sequences",
+                style = "width: 200px; background-color: #2c3e50; border-color: #2c3e50"
             ))
         ),
 
         mainPanel(
 
+            h3("Your results will be displayed below:"),
+            tags$br(),
             dataTableOutput("displayTable")
         )
     )
@@ -101,13 +129,20 @@ ui <- fluidPage(
 
 server <- function(input, output) {
 
+    # Display notification bubble when users pastes IDs. ignoreInit = TRUE
+    # prevents the dialog from displaying when app is started
+    observeEvent(input$pastedInput, {
+        showNotification("Click the Search button to continue.",
+                         type = "message")
+    }, ignoreInit = TRUE)
 
-    # Extract the genes to be mapped, dependent on chosen strain. Delay all code
-    # until the search button is pressed
+
+    # Delay all code until the search button is pressed
     observeEvent(input$search, {
 
-        myGenes <- reactive({
 
+        # Extract the genes to be mapped, dependent on chosen strain
+        myGenes <- reactive({
             req(input$pastedInput)
 
             if (input$strainChoice == "PAO1") {
@@ -125,9 +160,8 @@ server <- function(input, output) {
         })
 
 
-        # Convert to a data frame, and fix column name
+        # Convert to a data frame, and fix column name for easy joining later
         myGenesTable <- reactive({
-
             req(myGenes())
 
             part1 <- data.frame(Genes = myGenes(), stringsAsFactors = FALSE)
@@ -139,7 +173,6 @@ server <- function(input, output) {
 
         # Map the input genes, dependent on strain
         filteredTable <- reactive({
-
             req(myGenesTable(), input$strainChoice)
 
             if (input$strainChoice == "PAO1") {
@@ -161,14 +194,24 @@ server <- function(input, output) {
         displayTable <- reactive({
 
             select(filteredTable(), -c(Nucleotide_Sequence, Amino_Acid_Sequence)) %>%
-                arrange(Locus_Tag)
+                arrange(Locus_Tag) %>%
+                dplyr::rename("Locus Tag" = Locus_Tag,
+                              "Product" = Product_Name)
         })
 
 
-        # Render the table of results
+        # Render the table of results; prevent updating the results table when
+        # input IDs are changed until the search button is pressed again
         output$displayTable <- renderDataTable({
             isolate(displayTable())
-        }, options = list(searching = FALSE))
+        }, options = list(searching = FALSE,
+                          # pageLength = 10,
+                          # lengthMenu = c(5, 10, 15, 20),
+                          scrollX = "100%",
+                          scrollY = "600px",
+                          scrollCollapse = TRUE,
+                          paging = FALSE)
+        )
 
 
         # Download button for displayTable, enabled and then populated
@@ -224,14 +267,12 @@ server <- function(input, output) {
                     )
             }
         )
-
-
     })
 }
 
 
 
 
-# Run the app -------------------------------------------------------------
+# Run the app! ------------------------------------------------------------
 
 shinyApp(ui, server)
