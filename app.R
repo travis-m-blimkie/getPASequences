@@ -31,7 +31,7 @@ ui <- fluidPage(
     shinyjs::useShinyjs(),
 
     # Application title
-    titlePanel(div(HTML("Retreive <em>P. aeruginosa</em> Annotations and Sequences")),
+    titlePanel(div(HTML("Retrieve <em>P. aeruginosa</em> Annotations and Sequences")),
                windowTitle = "getPASequences"),
 
     tags$br(),
