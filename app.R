@@ -79,17 +79,16 @@ ui <- fluidPage(
                 inputId = "search",
                 label   = "Search",
                 icon    = icon("search"),
-                style   = "color: #fff; background-color: #18bc9c; border-color: #18bc9c; width: 207.5px"
+                style   = "color: #fff; background-color: #18bc9c; border-color: #18bc9c; width: 200px"
             ),
 
-            tags$br(),
-            tags$br(),
+            tags$hr(),
 
             # Download button for annotation table
             disabled(downloadButton(
                 "resultTable",
-                "Download Results Table",
-                style = "color: #fff; background-color: #337ab7; border-color: #337ab7; width: 415px"
+                "Download Annotations",
+                style = "color: #fff; background-color: #337ab7; border-color: #337ab7; width: 200px"
             )),
 
             tags$br(),
