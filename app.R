@@ -1,10 +1,9 @@
 
 # TODO Add message/notification if str_extract_all() yeilds no IDs aka input IDs
-# are not in the proper format
+# are not in the proper format. Use combination of renderUI and validate(need(x,
+# "message))
 
-# TODO How should missing input IDs be handled?
-
-# TODO change showNotification() on gene paste to renderUI (like in metabridge)
+# TODO change showNotification() on gene paste to renderUI (like in MetaBridge)
 
 
 # Load libraries and data -------------------------------------------------
@@ -44,13 +43,12 @@ ui <- fluidPage(
                 "This app is designed to retreive annotations, nucleotide, and ",
                 "amino acid sequences for three strains of <em>P. aeruginosa</em>,",
                 "namely PAO1, PA14, and LESB58."
-                ))),
+            ))),
 
             tags$p(div(HTML(
-                "<b>NOTE:</b> Currently non-matching genes are NOT returned to the user, ",
-                "and there is no warning when this occurs. Please check the ",
-                "number of results compared to your number of inputs to ensure ",
-                "no genes went missing."
+                "<b>NOTE:</b> Non-matching IDs are returned in a separate ",
+                "table to the user. IDs must still be in the proper format, ",
+                "(e.g. PA0000 for strain PAO1) to be recognized."
             ))),
 
             tags$br(),
@@ -69,6 +67,7 @@ ui <- fluidPage(
             textAreaInput(
                 "pastedInput",
                 "Paste your list of locus tags, one per line:",
+                placeholder = "Your genes here...",
                 height = "300px"
             ),
 
@@ -104,19 +103,29 @@ ui <- fluidPage(
 
             div(style = "display: inline-block; vertical-align: top; width: 10px;", HTML("<br>")),
 
-            # Download button for amino acid sequences
+            # Download button for amino acid sequences, disabled until data is
+            # available
             disabled(downloadButton(
                 "aaSeqs",
                 "Protein Sequences",
                 style = "width: 200px; background-color: #2c3e50; border-color: #2c3e50"
             ))
+
         ),
 
         mainPanel(
 
+            # Render panel for the matched results
             h3("Your results will be displayed below:"),
             tags$br(),
-            dataTableOutput("displayTable")
+            dataTableOutput("displayTable"),
+
+            tags$hr(),
+
+            # Output for the non-matching genes. Using uiOutput() here so that
+            # it only displays if there are non-matching genes (i.e. the table
+            # which holds said genes has more than 0 rows)
+            uiOutput("missingGenesPanel")
         )
     )
 )
@@ -132,31 +141,44 @@ server <- function(input, output) {
     # prevents the dialog from displaying when app is started
     observeEvent(input$pastedInput, {
         showNotification("Click the Search button to continue.",
-                         type = "message")
+                         type = "message",
+                         duration = 1)
     }, ignoreInit = TRUE)
+
+
+    # Extract the genes to be mapped, dependent on chosen strain
+    myGenes <- reactive({
+        req(input$pastedInput)
+
+        if (input$strainChoice == "PAO1") {
+            str_extract_all(input$pastedInput, pattern = "PA[0-9]{4}")
+
+        } else if (input$strainChoice == "PA14") {
+            str_extract_all(input$pastedInput, pattern = "PA14_[0-9]{5}")
+
+        } else if (input$strainChoice == "LESB58") {
+            str_extract_all(input$pastedInput, pattern = "PALES_[0-9]{5}")
+
+        } else {
+            return(NULL)
+        }
+    })
+
+
+    # TODO Figure out a way to warn the user if their input isn't in the correct
+    # format
+    # inputCheck <- reactive({
+    #
+    #     if (is.null(myGenes())) {
+    #         showNotification(paste0("Your IDs are not in the proper format.",
+    #                                 "Please check your genes and try again."),
+    #                          type = "error")
+    #     }
+    # })
 
 
     # Delay all code until the search button is pressed
     observeEvent(input$search, {
-
-
-        # Extract the genes to be mapped, dependent on chosen strain
-        myGenes <- reactive({
-            req(input$pastedInput)
-
-            if (input$strainChoice == "PAO1") {
-                str_extract_all(input$pastedInput, pattern = "PA[0-9]{4}")
-
-            } else if (input$strainChoice == "PA14") {
-                str_extract_all(input$pastedInput, pattern = "PA14_[0-9]{5}")
-
-            } else if (input$strainChoice == "LESB58") {
-                str_extract_all(input$pastedInput, pattern = "PALES_[0-9]{5}")
-
-            } else {
-                return(NULL)
-            }
-        })
 
 
         # Convert to a data frame, and fix column name for easy joining later
@@ -170,7 +192,8 @@ server <- function(input, output) {
         })
 
 
-        # Map the input genes, dependent on strain
+        # Map the input genes, dependent on strain. Notice we use inner_join()
+        # here, which means genes with no hits must be handled separately
         filteredTable <- reactive({
             req(myGenesTable(), input$strainChoice)
 
@@ -199,18 +222,48 @@ server <- function(input, output) {
         })
 
 
+        # Now we deal with any genes submitted that didn't have a match
+        noMatchGenes <- reactive({
+            anti_join(myGenesTable(), filteredTable(), by = "Locus_Tag")
+        })
+
+
         # Render the table of results; prevent updating the results table when
         # input IDs are changed until the search button is pressed again
         output$displayTable <- renderDataTable({
             isolate(displayTable())
         }, options = list(searching = FALSE,
-                          # pageLength = 10,
-                          # lengthMenu = c(5, 10, 15, 20),
                           scrollX = "100%",
                           scrollY = "600px",
                           scrollCollapse = TRUE,
                           paging = FALSE)
         )
+
+
+        # Render the output for non-matching genes, if present. This first chunk
+        # creates the table which will be rendered
+        output$missingGenesTable <- renderDataTable({
+            isolate(noMatchGenes())
+        }, options = list(searching = FALSE,
+                          scrollX = "100%",
+                          scrollY = "600px",
+                          scrollCollapse = TRUE,
+                          paging = FALSE))
+
+        # This chunk renders the results only if there are non-matching genes
+        output$missingGenesPanel <- renderUI({
+
+            isolate(noMatchGenes())
+
+            if (nrow(noMatchGenes()) == 0) {
+                return(NULL)
+            } else {
+                return(tagList(
+                    tags$h3("Non-matching genes will be shown below:"),
+                    dataTableOutput("missingGenesTable")
+                ))
+            }
+        })
 
 
         # Download button for displayTable, enabled and then populated
