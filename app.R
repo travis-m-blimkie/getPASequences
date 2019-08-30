@@ -1,11 +1,4 @@
 
-# TODO Add message/notification if str_extract_all() yeilds no IDs aka input IDs
-# are not in the proper format. Use combination of renderUI and validate(need(x,
-# "message"))
-
-# TODO change showNotification() on gene paste to renderUI (like in MetaBridge)
-
-
 # Load libraries and data -------------------------------------------------
 
 library(shiny)
@@ -23,7 +16,7 @@ lesb58Data <- readRDS("data/Pseudomonas_aeruginosa_LESB58_125.Rds")
 
 ui <- fluidPage(
 
-    # Enable shinyjs usage
+    # Enable shinyjs usage - NEED THIS LINE
     shinyjs::useShinyjs(),
 
     # Use the flatly theme
@@ -40,8 +33,6 @@ ui <- fluidPage(
     sidebarLayout(
 
         sidebarPanel(
-
-            # tags$style(".well {background-color:#c9ddf3 ;}"),
 
             tags$p(div(HTML(
                 "This app is designed to retreive annotations, nucleotide, and ",
@@ -76,13 +67,12 @@ ui <- fluidPage(
             ),
 
 
-            # Button which triggers results to display. "background-color"
-            # defines the colour of the button (default #337ab7)
+            # Button which triggers results to display
             actionButton(
-                inputId = "search",
-                label   = "Search",
-                icon    = icon("search"),
-                style   = "color: #fff; background-color: #18bc9c; border-color: #18bc9c; width: 200px"
+                "search",
+                "Search",
+                icon = icon("search"),
+                style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c; width: 200px"
             ),
 
             tags$hr(),
@@ -105,7 +95,11 @@ ui <- fluidPage(
                 style = "width: 200px; background-color: #2c3e50; border-color: #2c3e50"
             )),
 
-            div(style = "display: inline-block; vertical-align: top; width: 10px;", HTML("<br>")),
+            # Divider so the buttons to download sequences are on the same line
+            div(
+                style = "display: inline-block; vertical-align: top; width: 10px;",
+                HTML("<br>")
+            ),
 
             # Download button for amino acid sequences, disabled until data is
             # available
@@ -113,8 +107,14 @@ ui <- fluidPage(
                 "aaSeqs",
                 "Protein Sequences",
                 style = "width: 200px; background-color: #2c3e50; border-color: #2c3e50"
-            ))
+            )),
 
+            tags$hr(),
+
+            tags$p("This app was developed by Travis Blimkie. Source code for ",
+                   "this app is available at the ",
+                   shiny::tags$a(href = "https://github.com/travis-m-blimkie/getPASequences", "Github page.")
+            )
         ),
 
         mainPanel(
@@ -123,8 +123,6 @@ ui <- fluidPage(
             h3("Your results will be displayed below:"),
             tags$br(),
             dataTableOutput("displayTable"),
-
-            tags$hr(),
 
             # Output for the non-matching genes. Using uiOutput() here so that
             # it only displays if there are non-matching genes (i.e. the table
@@ -143,45 +141,19 @@ server <- function(input, output) {
 
     # Display notification bubble when users pastes IDs. ignoreInit = TRUE
     # prevents the dialog from displaying when app is started
-    observeEvent(input$pastedInput, {
-        showNotification("Click the Search button to continue.",
-                         type = "message",
-                         duration = 1)
-    }, ignoreInit = TRUE)
+    # observeEvent(input$pastedInput, {
+    #     showNotification("Click the Search button to continue.",
+    #                      type = "message",
+    #                      duration = 1)
+    # }, ignoreInit = TRUE)
 
 
-    # Extract the genes to be mapped, dependent on chosen strain
-    # TODO This could be replaced with a single regex to remove the need for the
-    # conditionals. Should also check if myGenes is empty i.e. IDs are not in
-    # the proper format. Regex is "PA(14|LES)?_?[0-9]{4,5}".
+    # Extract the genes to be mapped, using a single regex to match locus tags
+    # from any of the three supported strains
     myGenes <- reactive({
         req(input$pastedInput)
-
-        if (input$strainChoice == "PAO1") {
-            str_extract_all(input$pastedInput, pattern = "PA[0-9]{4}")
-
-        } else if (input$strainChoice == "PA14") {
-            str_extract_all(input$pastedInput, pattern = "PA14_[0-9]{5}")
-
-        } else if (input$strainChoice == "LESB58") {
-            str_extract_all(input$pastedInput, pattern = "PALES_[0-9]{5}")
-
-        } else {
-            return(NULL)
-        }
+        str_extract_all(input$pastedInput, pattern = "PA(14|LES)?_?[0-9]{4,5}")
     })
-
-
-    # TODO Figure out a way to warn the user if their input isn't in the correct
-    # format
-    # inputCheck <- reactive({
-    #
-    #     if (is.null(myGenes())) {
-    #         showNotification(paste0("Your IDs are not in the proper format.",
-    #                                 "Please check your genes and try again."),
-    #                          type = "error")
-    #     }
-    # })
 
 
     # Delay all code until the search button is pressed
@@ -261,15 +233,17 @@ server <- function(input, output) {
 
         # This chunk renders the results only if there are non-matching genes
         output$missingGenesPanel <- renderUI({
-
             isolate(noMatchGenes())
 
             if (nrow(noMatchGenes()) == 0) {
                 return(NULL)
             } else {
                 return(tagList(
+                    tags$hr(),
                     tags$h3("The following submitted genes had no matches:"),
-                    dataTableOutput("missingGenesTable")
+                    dataTableOutput("missingGenesTable"),
+                    tags$br(),
+                    tags$br()
                 ))
             }
         })
