@@ -1,7 +1,7 @@
 
 # TODO Add message/notification if str_extract_all() yeilds no IDs aka input IDs
 # are not in the proper format. Use combination of renderUI and validate(need(x,
-# "message))
+# "message"))
 
 # TODO change showNotification() on gene paste to renderUI (like in MetaBridge)
 
@@ -19,25 +19,29 @@ pa14Data <- readRDS("data/Pseudomonas_aeruginosa_UCBPP-PA14_109.Rds")
 lesb58Data <- readRDS("data/Pseudomonas_aeruginosa_LESB58_125.Rds")
 
 
-
 # Define the UI elements --------------------------------------------------
 
 ui <- fluidPage(
 
-    theme = shinytheme("flatly"),
-
     # Enable shinyjs usage
     shinyjs::useShinyjs(),
 
+    # Use the flatly theme
+    theme = shinytheme("flatly"),
+
     # Application title
-    titlePanel(div(HTML("Retrieve <em>P. aeruginosa</em> Annotations and Sequences")),
-               windowTitle = "getPASequences"),
+    titlePanel(
+        div(HTML("Retrieve <em>P. aeruginosa</em> Annotations and Sequences")),
+        windowTitle = "getPASequences"
+    ),
 
     tags$br(),
 
     sidebarLayout(
 
         sidebarPanel(
+
+            # tags$style(".well {background-color:#c9ddf3 ;}"),
 
             tags$p(div(HTML(
                 "This app is designed to retreive annotations, nucleotide, and ",
@@ -147,6 +151,9 @@ server <- function(input, output) {
 
 
     # Extract the genes to be mapped, dependent on chosen strain
+    # TODO This could be replaced with a single regex to remove the need for the
+    # conditionals. Should also check if myGenes is empty i.e. IDs are not in
+    # the proper format. Regex is "PA(14|LES)?_?[0-9]{4,5}".
     myGenes <- reactive({
         req(input$pastedInput)
 
@@ -248,7 +255,9 @@ server <- function(input, output) {
                           scrollX = "100%",
                           scrollY = "600px",
                           scrollCollapse = TRUE,
-                          paging = FALSE))
+                          paging = FALSE),
+        rownames = FALSE
+        )
 
         # This chunk renders the results only if there are non-matching genes
         output$missingGenesPanel <- renderUI({
@@ -259,7 +268,7 @@ server <- function(input, output) {
                 return(NULL)
             } else {
                 return(tagList(
-                    tags$h3("Non-matching genes will be shown below:"),
+                    tags$h3("The following submitted genes had no matches:"),
                     dataTableOutput("missingGenesTable")
                 ))
             }
