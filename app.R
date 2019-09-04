@@ -1,4 +1,7 @@
 
+# TODO Make the download buttons hidden by default, and only display after the
+# user hits "Search" and results get returned
+
 # Load libraries and data -------------------------------------------------
 
 library(shiny)
@@ -32,6 +35,9 @@ ui <- fluidPage(
 
     sidebarLayout(
 
+        #################
+        # SIDEBAR PANEL #
+        #################
         sidebarPanel(
 
             tags$p(div(HTML(
@@ -117,6 +123,9 @@ ui <- fluidPage(
             )
         ),
 
+        ##############
+        # MAIN PANEL #
+        ##############
         mainPanel(
 
             # Render panel for the matched results
@@ -140,7 +149,7 @@ ui <- fluidPage(
 server <- function(input, output) {
 
     # Display notification bubble when users pastes IDs. ignoreInit = TRUE
-    # prevents the dialog from displaying when app is started
+    # prevents the dialog from displaying when app is started.
     # observeEvent(input$pastedInput, {
     #     showNotification("Click the Search button to continue.",
     #                      type = "message",
@@ -220,7 +229,8 @@ server <- function(input, output) {
 
 
         # Render the output for non-matching genes, if present. This first chunk
-        # creates the table which will be rendered
+        # creates the table which will be rendered conditionally in the next
+        # block
         output$missingGenesTable <- renderDataTable({
             isolate(noMatchGenes())
         }, options = list(searching = FALSE,
@@ -308,6 +318,6 @@ server <- function(input, output) {
 
 
 
-# Run the app! ------------------------------------------------------------
+# Run the app -------------------------------------------------------------
 
 shinyApp(ui, server)
