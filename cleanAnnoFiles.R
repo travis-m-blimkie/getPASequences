@@ -1,35 +1,39 @@
 
+# This script covers the munging of gene annotations for each of the supported
+# Pseduomonas aeruginosa strains
+
+# Load libraries
 library(tidyverse)
 
+# List the annotation files to be used
+fileNames <- list.files("./data/", pattern = ".txt$")
 
-fileNames <- list.files("./", pattern = ".txt$")
-
-
-varNames <- fileNames %>% 
+# Create variable names for each file/strain
+varNames <- fileNames %>%
   map_chr(~str_replace(., pattern = "\\.txt", replacement = ""))
 
-
-myFiles <- fileNames %>% 
-  map(~read_tsv(paste0("./", .), comment = "#")) %>% 
+# Read in the files, and set the names of the list
+myFiles <- fileNames %>%
+  map(~read_tsv(paste0("./", .), comment = "#")) %>%
   set_names(varNames)
 
-
-selectCols <- myFiles %>% 
-  map(~select(., 
+# Select and rename desired columns
+selectCols <- myFiles %>%
+  map(~select(.,
               "Locus_Tag" = `Locus Tag`,
-              Start, 
-              End, 
+              Start,
+              End,
               Strand,
-              Name, 
+              Name,
               "Product_Name" = `Product Name`,
               Accession,
               "Nucleotide_Sequence" = `Nucleotide Sequence`,
               "Amino_Acid_Sequence" = `Amino Acid Sequence`))
 
-
-fixName <- selectCols %>% 
+# Replace NA's in the "Name" column with the locus tag
+fixName <- selectCols %>%
   map(~mutate(., Name = case_when(is.na(Name) ~ Locus_Tag, TRUE ~ Name)))
 
-
-map2(fixName, names(fixName), 
+# Save the cleaned files as Rds objects
+map2(fixName, names(fixName),
      ~saveRDS(.x, file = paste0("../Downloads/", .y, ".Rds")))

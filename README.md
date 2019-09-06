@@ -1,5 +1,10 @@
-# [getPASequences](https://travis-m-blimkie.shinyapps.io/getPASequences/)
+# getPASequences
 
-Custom-built Shiny app to retrieve annotations and nucleotide/amino acid sequences for *Pseudomonas aeruginosa* strains PAO1, PA14, and LESB58. Utilizes annotations from the [Pseudomonas Genome Database](http://pseudomonas.com/) for mapping. 
+### Available [here!](https://travis-m-blimkie.shinyapps.io/getPASequences/)  
+
+Custom-built Shiny app to retrieve annotations and nucleotide/amino acid sequences for *Pseudomonas aeruginosa* strains PAO1, PA14, and LESB58. Utilizes annotations from the [Pseudomonas Genome Database](http://pseudomonas.com/) for mapping.  
+Available with the MIT license. 
+
+***
 
 ![](www/getPASequences_screenshot.png)
