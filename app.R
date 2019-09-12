@@ -102,7 +102,9 @@ ui <- fluidPage(
                        href = "https://github.com/travis-m-blimkie/getPASequences",
                        "Github page."
                    )
-            )
+
+            ),
+            tags$p(div(HTML("<b>Coming soon:</b> Ortholog mapping!")))
         ),
 
         ##############
