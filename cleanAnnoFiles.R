@@ -1,6 +1,9 @@
 
 # This script covers the munging of gene annotations for each of the supported
-# Pseduomonas aeruginosa strains
+# Pseduomonas aeruginosa strains. If one wishes to update the database files
+# used in the mapping, this is the place to start! Simply drop the new files
+# into the `data` folder and run through this code. Note files are downloaded
+# from "pseudomonas.com", as the TSV annotations on the strain info page.
 
 # Load libraries
 library(tidyverse)
