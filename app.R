@@ -133,15 +133,6 @@ ui <- fluidPage(
 
 server <- function(input, output) {
 
-    # Display notification bubble when users pastes IDs. The option "ignoreInit
-    # = TRUE" prevents the dialog from displaying when app is started.
-    # observeEvent(input$pastedInput, {
-    #     showNotification("Click the Search button to continue.",
-    #                      type = "message",
-    #                      duration = 1)
-    # }, ignoreInit = TRUE)
-
-
     # Extract the genes to be mapped, using a single regex to match locus tags
     # from any of the three supported strains
     myGenes <- reactive({
