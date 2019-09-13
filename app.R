@@ -102,7 +102,9 @@ ui <- fluidPage(
                        href = "https://github.com/travis-m-blimkie/getPASequences",
                        "Github page."
                    )
-            )
+
+            ),
+            tags$p(div(HTML("<b>Coming soon:</b> Ortholog mapping!")))
         ),
 
         ##############
@@ -130,15 +132,6 @@ ui <- fluidPage(
 # Define the server logic -------------------------------------------------
 
 server <- function(input, output) {
-
-    # Display notification bubble when users pastes IDs. The option "ignoreInit
-    # = TRUE" prevents the dialog from displaying when app is started.
-    # observeEvent(input$pastedInput, {
-    #     showNotification("Click the Search button to continue.",
-    #                      type = "message",
-    #                      duration = 1)
-    # }, ignoreInit = TRUE)
-
 
     # Extract the genes to be mapped, using a single regex to match locus tags
     # from any of the three supported strains
@@ -253,7 +246,7 @@ server <- function(input, output) {
                 paste0(input$strainChoice, "_annotations.csv")
             },
             content = function(file) {
-                write.csv(displayTable(), file, row.names = FALSE, quote = FALSE)
+                write.csv(displayTable(), file, row.names = FALSE, sep = "\t")
             }
         )
 
