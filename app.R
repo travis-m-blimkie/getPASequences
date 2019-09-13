@@ -255,7 +255,7 @@ server <- function(input, output) {
                 paste0(input$strainChoice, "_annotations.csv")
             },
             content = function(file) {
-                write.csv(displayTable(), file, row.names = FALSE, quote = FALSE)
+                write.csv(displayTable(), file, row.names = FALSE, sep = "\t")
             }
         )
 
