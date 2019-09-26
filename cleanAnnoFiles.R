@@ -39,4 +39,4 @@ fixName <- selectCols %>%
 
 # Save the cleaned files as Rds objects
 map2(fixName, names(fixName),
-     ~saveRDS(.x, file = paste0("../Downloads/", .y, ".Rds")))
+     ~saveRDS(.x, file = paste0("./data/", .y, ".Rds")))
