@@ -8,6 +8,7 @@ annotations from the [Pseudomonas Genome Database](http://pseudomonas.com/) for
 mapping. Annotations and sequences can each be downloaded as separate files.
 Sequences are in the multi-fasta format with descriptive headings, designed to
 be compatible with programs such as batch submission to NCBI's BLAST. If you run into a bug or problem, open an issue and I'll look into it.
+
 Available with the MIT license. 
 
 ***
