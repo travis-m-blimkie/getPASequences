@@ -1,6 +1,6 @@
 
 # TODO Add ortholog mapping? Would require reformatting the whole app based
-# around a header+tab style
+# around a header+tab style - WIP on newDev branch
 
 
 # Load libraries and data -------------------------------------------------
@@ -36,9 +36,9 @@ ui <- fluidPage(
 
     sidebarLayout(
 
-        #################
-        # SIDEBAR PANEL #
-        #################
+        ###################
+        ## SIDEBAR PANEL ##
+        ###################
         sidebarPanel(
 
             tags$p(div(HTML(
@@ -96,20 +96,31 @@ ui <- fluidPage(
 
             tags$hr(),
 
-            tags$p("This app was developed by Travis Blimkie. Source code for ",
-                   "this app is available at the ",
+            tags$p("This app was developed by Travis Blimkie, with source code ",
+                   "available at the ",
                    shiny::tags$a(
                        href = "https://github.com/travis-m-blimkie/getPASequences",
                        "Github page."
                    )
 
             ),
+
+            tags$p("It makes extensive use of data available from the ",
+                   shiny::tags$a(
+                       href = "http://www.pseudomonas.com/",
+                       "Pseudomonas Genome Database"
+                   ),
+                   " for retreiving annotations and nucleotide/amino acid ",
+                   "sequences."),
+
+            tags$br(),
+
             tags$p(div(HTML("<b>Coming soon:</b> Ortholog mapping!")))
         ),
 
-        ##############
-        # MAIN PANEL #
-        ##############
+        ################
+        ## MAIN PANEL ##
+        ################
         mainPanel(
 
             # Render panel for the matched results/annotations (showing
