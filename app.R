@@ -19,22 +19,72 @@ lesb58Data <- readRDS("data/Pseudomonas_aeruginosa_LESB58_125.Rds")
 # Define the UI elements --------------------------------------------------
 
 ui <- navbarPage(
-    title = div(HTML("Retrieve <em>P. aeruginosa</em> Annotations and Sequences")),
+
+    id = "navBarLayout",
+
+    # Settings for the NavBar layout
+
+    # Blank title, as we want the first tab to be our title. Maybe place an
+    # image/logo here in the future
+    title = HTML(""),
+
+    # What is shown in the browser window
     windowTitle = "getPASequences",
 
+    # Make the navbar collapsible
+    collapsible = TRUE,
+
     # Enable shinyjs usage - NEED THIS LINE!!
-    shinyjs::useShinyjs(),
+    header = tagList(shinyjs::useShinyjs()),
 
     # Using the flatly theme
     theme = shinytheme("flatly"),
 
-    tags$p("Welcome info here."),
-
-    # actionLink()
-
-
+    # Welcome tab
     tabPanel(
-        "Annotate",
+
+        value = "main",
+
+        # TODO Come up with a better title
+        div(HTML("<em>P. aeruginosa</em> Tool")),
+
+        tags$div(
+            class = "jumbotron",
+            h1("Welcome"),
+
+            tags$div(
+                tags$p("Some welcome text for the user."),
+
+                tags$p("Maybe some more text describing what to do."),
+
+                br(),
+
+                div(
+                    actionButton(
+                        "anno",
+                        "Get Annotations & Sequences",
+                        style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c"
+                    ),
+
+                    HTML("&nbsp;&nbsp;&nbsp;"),
+
+                    actionButton(
+                        "ortho",
+                        "Perform Ortholog Mapping",
+                        style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c"
+                    )
+                )
+            )
+        )
+    ),
+
+
+    # Annotation and Sequence Tab
+    tabPanel(
+
+        value = "annos",
+
+        "Annotations and Sequences",
 
         sidebarLayout(
 
@@ -129,7 +179,10 @@ ui <- navbarPage(
     ),
 
     tabPanel(
-        "Orthologs",
+
+        value = "orthos",
+
+        "Ortholog Mapping",
 
         tags$p("Ortholog mapping coming soon!")
 
@@ -145,7 +198,17 @@ ui <- navbarPage(
 
 # Define the server logic -------------------------------------------------
 
-server <- function(input, output) {
+server <- function(input, output, session) {
+
+    # Switch to the anno tab panel
+    observeEvent(input$anno, {
+        updateNavbarPage(session, inputId = "navBarLayout", selected = "annos")
+    }, ignoreInit = TRUE)
+
+    # Switch to the ortholog tab panel
+    observeEvent(input$ortho, {
+        updateNavbarPage(session, inputId = "navBarLayout", selected = "orthos")
+    }, ignoreInit = TRUE)
 
     # Extract the genes to be mapped, using a single regex to match locus tags
     # from any of the three supported strains
