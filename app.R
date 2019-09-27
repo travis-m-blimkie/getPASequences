@@ -63,7 +63,7 @@ ui <- navbarPage(
                     actionButton(
                         "anno",
                         "Get Annotations & Sequences",
-                        style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c"
+                        style = "color: #fff; background-color: #0c7489; border-color: #0c7489;"
                     ),
 
                     HTML("&nbsp;&nbsp;&nbsp;"),
@@ -71,7 +71,7 @@ ui <- navbarPage(
                     actionButton(
                         "ortho",
                         "Perform Ortholog Mapping",
-                        style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c"
+                        style = "color: #fff; background-color: #0c7489; border-color: #0c7489"
                     )
                 )
             )
