@@ -19,13 +19,12 @@ lesb58Data <- readRDS("data/Pseudomonas_aeruginosa_LESB58_125.Rds")
 # Define the UI elements --------------------------------------------------
 
 ui <- navbarPage(
-
     id = "navBarLayout",
 
     # Settings for the NavBar layout
 
     # Blank title, as we want the first tab to be our title. Maybe place an
-    # image/logo here in the future
+    # image/logo here in the future.
     title = HTML(""),
 
     # What is shown in the browser window
@@ -42,20 +41,23 @@ ui <- navbarPage(
 
     # Welcome tab
     tabPanel(
-
         value = "main",
 
-        # TODO Come up with a better title
-        div(HTML("<em>P. aeruginosa</em> Tool")),
+        # TODO Come up with a better title!
+        div(HTML("PATool")),
 
         tags$div(
             class = "jumbotron",
             h1("Welcome"),
 
             tags$div(
-                tags$p("Some welcome text for the user."),
+                tags$p(HTML(paste0("Welcome to <NAME HERE>, a Shiny app designed to ",
+                "faciltate analyses with ", tags$em("Pseudomonas aeruginosa"),
+                ". Here you can upload a list of locus tags and retrieve gene ",
+                "annotations, nucleotide or amino acid sequences, as well as ",
+                "map between strains."))),
 
-                tags$p("Maybe some more text describing what to do."),
+                tags$p("To get started, select one of the options below:"),
 
                 br(),
 
@@ -63,7 +65,7 @@ ui <- navbarPage(
                     actionButton(
                         "anno",
                         "Get Annotations & Sequences",
-                        style = "color: #fff; background-color: #0c7489; border-color: #0c7489;"
+                        style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c;"
                     ),
 
                     HTML("&nbsp;&nbsp;&nbsp;"),
@@ -71,7 +73,7 @@ ui <- navbarPage(
                     actionButton(
                         "ortho",
                         "Perform Ortholog Mapping",
-                        style = "color: #fff; background-color: #0c7489; border-color: #0c7489"
+                        style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c"
                     )
                 )
             )
@@ -81,11 +83,8 @@ ui <- navbarPage(
 
     # Annotation and Sequence Tab
     tabPanel(
-
         value = "annos",
-
         "Annotations and Sequences",
-
         sidebarLayout(
 
             #################
@@ -154,9 +153,7 @@ ui <- navbarPage(
                            href = "https://github.com/travis-m-blimkie/getPASequences",
                            "Github page."
                        )
-
-                ),
-                tags$p(div(HTML("<b>Coming soon:</b> Ortholog mapping!")))
+                )
             ),
 
             ##############
@@ -179,12 +176,12 @@ ui <- navbarPage(
     ),
 
     tabPanel(
-
         value = "orthos",
-
         "Ortholog Mapping",
-
-        tags$p("Ortholog mapping coming soon!")
+        tags$div(
+            class = "jumbotron",
+            tags$p("Ortholog mapping coming soon!")
+        )
 
     )
 
