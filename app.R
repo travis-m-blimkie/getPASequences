@@ -36,8 +36,9 @@ ui <- navbarPage(
     # Enable shinyjs usage - NEED THIS LINE!!
     header = tagList(shinyjs::useShinyjs()),
 
-    # Using the flatly theme
-    theme = shinytheme("flatly"),
+    # Using the flatly theme or use theme selector to try them out
+    # theme = shinytheme("flatly"),
+    shinythemes::themeSelector(),
 
     # Welcome tab
     tabPanel(
@@ -64,16 +65,16 @@ ui <- navbarPage(
                 div(
                     actionButton(
                         "anno",
-                        "Get Annotations & Sequences",
-                        style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c;"
+                        "Get Annotations & Sequences"
+                        # style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c;"
                     ),
 
                     HTML("&nbsp;&nbsp;&nbsp;"),
 
                     actionButton(
                         "ortho",
-                        "Perform Ortholog Mapping",
-                        style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c"
+                        "Perform Ortholog Mapping"
+                        # style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c"
                     )
                 )
             )
@@ -131,8 +132,8 @@ ui <- navbarPage(
                 actionButton(
                     "search",
                     "Search",
-                    icon = icon("search"),
-                    style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c; width: 200px"
+                    icon = icon("search")
+                    # style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c; width: 200px"
                 ),
 
 
@@ -332,8 +333,8 @@ server <- function(input, output, session) {
                     tags$hr(),
                     downloadButton(
                         "resultTable",
-                        "Download Annotations",
-                        style = "color: #fff; background-color: #337ab7; border-color: #337ab7; width: 200px"
+                        "Download Annotations"
+                        # style = "color: #fff; background-color: #337ab7; border-color: #337ab7; width: 200px"
                     ),
                     tags$br(),
                     tags$br()
@@ -395,8 +396,8 @@ server <- function(input, output, session) {
                 tagList(
                     downloadButton(
                         "ntSeqs",
-                        "Nucleotide Sequences",
-                        style = "width: 200px; background-color: #2c3e50; border-color: #2c3e50"
+                        "Nucleotide Sequences"
+                        # style = "width: 200px; background-color: #2c3e50; border-color: #2c3e50"
                     ),
 
                     # Divider so both sequence download buttons render on the
@@ -408,8 +409,8 @@ server <- function(input, output, session) {
 
                     downloadButton(
                         "aaSeqs",
-                        "Protein Sequences",
-                        style = "width: 200px; background-color: #2c3e50; border-color: #2c3e50"
+                        "Protein Sequences"
+                        # style = "width: 200px; background-color: #2c3e50; border-color: #2c3e50"
                     )
                 )
             }
