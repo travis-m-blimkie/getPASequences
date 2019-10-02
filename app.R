@@ -18,7 +18,10 @@ lesb58Data <- readRDS("data/Pseudomonas_aeruginosa_LESB58_125.Rds")
 
 # Define the UI elements --------------------------------------------------
 
-ui <- navbarPage(
+ui <- fluidPage(
+    theme = shinytheme("flatly"),
+
+    navbarPage(
     id = "navBarLayout",
 
     # Settings for the NavBar layout
@@ -36,10 +39,6 @@ ui <- navbarPage(
     # Enable shinyjs usage - NEED THIS LINE!!
     header = tagList(shinyjs::useShinyjs()),
 
-    # Using the flatly theme or use theme selector to try them out
-    # theme = shinytheme("flatly"),
-    shinythemes::themeSelector(),
-
     # Welcome tab
     tabPanel(
         value = "main",
@@ -52,7 +51,7 @@ ui <- navbarPage(
             h1("Welcome"),
 
             tags$div(
-                tags$p(HTML(paste0("Welcome to <NAME HERE>, a Shiny app designed to ",
+                tags$p(HTML(paste0("Welcome to NAME HERE, a Shiny app designed to ",
                 "faciltate analyses with ", tags$em("Pseudomonas aeruginosa"),
                 ". Here you can upload a list of locus tags and retrieve gene ",
                 "annotations, nucleotide or amino acid sequences, as well as ",
@@ -65,16 +64,16 @@ ui <- navbarPage(
                 div(
                     actionButton(
                         "anno",
-                        "Get Annotations & Sequences"
-                        # style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c;"
+                        "Get Annotations & Sequences",
+                        style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50;"
                     ),
 
                     HTML("&nbsp;&nbsp;&nbsp;"),
 
                     actionButton(
                         "ortho",
-                        "Perform Ortholog Mapping"
-                        # style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c"
+                        "Perform Ortholog Mapping",
+                        style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50;"
                     )
                 )
             )
@@ -132,8 +131,8 @@ ui <- navbarPage(
                 actionButton(
                     "search",
                     "Search",
-                    icon = icon("search")
-                    # style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c; width: 200px"
+                    icon = icon("search"),
+                    style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c; width: 200px"
                 ),
 
 
@@ -183,13 +182,8 @@ ui <- navbarPage(
             class = "jumbotron",
             tags$p("Ortholog mapping coming soon!")
         )
-
     )
-
-
-
-
-)
+))
 
 
 
@@ -333,8 +327,8 @@ server <- function(input, output, session) {
                     tags$hr(),
                     downloadButton(
                         "resultTable",
-                        "Download Annotations"
-                        # style = "color: #fff; background-color: #337ab7; border-color: #337ab7; width: 200px"
+                        "Download Annotations",
+                        style = "color: #fff; background-color: #337ab7; border-color: #337ab7; width: 200px"
                     ),
                     tags$br(),
                     tags$br()
@@ -396,8 +390,8 @@ server <- function(input, output, session) {
                 tagList(
                     downloadButton(
                         "ntSeqs",
-                        "Nucleotide Sequences"
-                        # style = "width: 200px; background-color: #2c3e50; border-color: #2c3e50"
+                        "Nucleotide Sequences",
+                        style = "width: 200px; background-color: #2c3e50; border-color: #2c3e50"
                     ),
 
                     # Divider so both sequence download buttons render on the
@@ -409,8 +403,8 @@ server <- function(input, output, session) {
 
                     downloadButton(
                         "aaSeqs",
-                        "Protein Sequences"
-                        # style = "width: 200px; background-color: #2c3e50; border-color: #2c3e50"
+                        "Protein Sequences",
+                        style = "width: 200px; background-color: #2c3e50; border-color: #2c3e50"
                     )
                 )
             }
