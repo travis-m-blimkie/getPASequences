@@ -113,10 +113,11 @@ ui <- fluidPage(
                    " for retreiving annotations and nucleotide/amino acid ",
                    "sequences."),
 
-            tags$br(),
+            tags$hr(),
 
             tags$p(div(HTML("<b>Coming soon:</b> Ortholog mapping!")))
         ),
+
 
         ################
         ## MAIN PANEL ##
