@@ -1,8 +1,4 @@
 
-# TODO Add ortholog mapping? Would require reformatting the whole app based
-# around a header+tab style
-
-
 # Load libraries and data -------------------------------------------------
 
 library(shiny)
@@ -39,7 +35,9 @@ ui <- fluidPage(
     # Enable shinyjs usage - NEED THIS LINE!!
     header = tagList(shinyjs::useShinyjs()),
 
-    # Welcome tab
+    #################
+    ## Welcome Tab ##
+    #################
     tabPanel(
         value = "main",
 
@@ -80,8 +78,9 @@ ui <- fluidPage(
         )
     ),
 
-
-    # Annotation and Sequence Tab
+    #################################
+    ## Annotation and Sequence Tab ##
+    #################################
     tabPanel(
         value = "annos",
         "Annotations and Sequences",
@@ -145,15 +144,7 @@ ui <- fluidPage(
                 # until data is available
                 uiOutput("seqs_dl"),
 
-                tags$hr(),
-
-                tags$p("This app was developed by Travis Blimkie. Source code for ",
-                       "this app is available at the ",
-                       shiny::tags$a(
-                           href = "https://github.com/travis-m-blimkie/getPASequences",
-                           "Github page."
-                       )
-                )
+                tags$hr()
             ),
 
             ##############
@@ -175,12 +166,53 @@ ui <- fluidPage(
         )
     ),
 
+    ##########################
+    ## Ortholog Mapping Tab ##
+    ##########################
     tabPanel(
         value = "orthos",
         "Ortholog Mapping",
         tags$div(
             class = "jumbotron",
-            tags$p("Ortholog mapping coming soon!")
+            tags$p("Coming soon!")
+        )
+    ),
+
+    ###############
+    ## About Tab ##
+    ###############
+    tabPanel(
+        value = "about",
+        "About",
+
+        tags$div(
+            class = "jumbotron",
+
+            tags$p("Source code for this app is available at the ",
+                   shiny::tags$a(
+                       href = "https://github.com/travis-m-blimkie/getPASequences",
+                       "Github page"
+                   ),
+                   " under the MIT license."
+            ),
+
+            tags$p(
+                "The data used by this app for annotations and sequences comes from the ",
+                shiny::tags$a(
+                    href = "https://pseudomonas.com",
+                    "Pseudomonas Genome Database"
+                ),
+                ", version 18.1."
+            ),
+
+            tags$p(
+                "Ortholog information was obtained from ",
+                shiny::tags$a(
+                    href = "http://pseudoluge.pseudomonas.com/",
+                    "OrtholugeDB"
+                ),
+                ", version 1.0."
+            )
         )
     )
 ))
