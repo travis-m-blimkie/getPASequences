@@ -49,11 +49,19 @@ ui <- fluidPage(
             h1("Welcome"),
 
             tags$div(
-                tags$p(HTML(paste0("Welcome to NAME HERE, a Shiny app designed to ",
-                "faciltate analyses with ", tags$em("Pseudomonas aeruginosa"),
-                ". Here you can upload a list of locus tags and retrieve gene ",
-                "annotations, nucleotide or amino acid sequences, as well as ",
-                "map between strains."))),
+
+                tags$p(HTML(paste0(
+                    "Welcome to NAME HERE, a Shiny app designed to ",
+                    "faciltate analyses with <em>Pseudomonas aeruginosa</em>. ",
+                    "Here you can upload a list of locus tags and retrieve gene ",
+                    "annotations, nucleotide or amino acid sequences, as well as ",
+                    "map between strains."
+                ))),
+
+                tags$p(HTML(paste0(
+                    "We currently supports the following strains of ",
+                    "<em>P. aeruginosa</em>: PAO1, PA14, & LESB58."
+                ))),
 
                 tags$p("To get started, select one of the options below:"),
 
