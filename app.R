@@ -51,16 +51,16 @@ ui <- fluidPage(
             tags$div(
 
                 tags$p(HTML(paste0(
-                    "Welcome to NAME HERE, a Shiny app designed to ",
-                    "faciltate analyses with <em>Pseudomonas aeruginosa</em>. ",
-                    "Here you can upload a list of locus tags and retrieve gene ",
-                    "annotations, nucleotide or amino acid sequences, as well as ",
-                    "map between strains."
+                    "Welcome to NAME HERE, a Shiny app designed to faciltate ",
+                    "analyses with <em>Pseudomonas aeruginosa</em>. Here you ",
+                    "can upload a list of locus tags and retrieve gene ",
+                    "annotations, nucleotide or amino acid sequences, as well ",
+                    "as map between strains."
                 ))),
 
                 tags$p(HTML(paste0(
-                    "We currently supports the following strains of ",
-                    "<em>P. aeruginosa</em>: PAO1, PA14, & LESB58."
+                    "<b>NOTE:</b> We currently supports the following strains ",
+                    "of <em>P. aeruginosa</em>: PAO1, PA14, & LESB58."
                 ))),
 
                 tags$p("To get started, select one of the options below:"),
@@ -220,6 +220,18 @@ ui <- fluidPage(
                     "OrtholugeDB"
                 ),
                 ", version 1.0."
+            ),
+
+            tags$p("NAME HERE uses the following R packages:"),
+            tags$p(
+                    tags$dt("Shiny and ShinyJS"),
+                    tags$ul(tags$dd("Provide the framework for app construction.")),
+
+                    tags$dt("The Tidyverse"),
+                    tags$ul(tags$dd("Data manipulation functions, as well as reading and writing data.")),
+
+                    tags$dt("seqinr"),
+                    tags$ul(tags$dd("Writing fasta files."))
             )
         )
     )
