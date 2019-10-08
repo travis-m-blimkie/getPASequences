@@ -18,224 +18,230 @@ ui <- fluidPage(
     theme = shinytheme("flatly"),
 
     navbarPage(
-    id = "navBarLayout",
+        id = "navBarLayout",
 
-    # Settings for the NavBar layout
+        # Settings for the NavBar layout
 
-    # Blank title, as we want the first tab to be our title. Maybe place an
-    # image/logo here in the future.
-    title = HTML(""),
+        # Blank title, as we want the first tab to be our title. Maybe place an
+        # image/logo here in the future.
+        title = HTML(""),
 
-    # What is shown in the browser window
-    windowTitle = "getPASequences",
+        # What is shown in the browser window
+        windowTitle = "getPASequences",
 
-    # Make the navbar collapsible
-    collapsible = TRUE,
+        # Make the navbar collapsible
+        collapsible = TRUE,
 
-    # Enable shinyjs usage - NEED THIS LINE!!
-    header = tagList(shinyjs::useShinyjs()),
+        # Enable shinyjs usage - NEED THIS LINE!!
+        header = tagList(useShinyjs()),
 
-    #################
-    ## Welcome Tab ##
-    #################
-    tabPanel(
-        value = "main",
+        #################
+        ## Welcome Tab ##
+        #################
+        tabPanel(
+            value = "main",
 
-        # TODO Come up with a better title!
-        div(HTML("PATool")),
-
-        tags$div(
-            class = "jumbotron",
-            h1("Welcome"),
+            # TODO Come up with a better title/name!
+            div(HTML("PATool")),
 
             tags$div(
+                class = "jumbotron",
+                h1("Welcome"),
 
-                tags$p(HTML(paste0(
-                    "Welcome to NAME HERE, a Shiny app designed to faciltate ",
-                    "analyses with <em>Pseudomonas aeruginosa</em>. Here you ",
-                    "can upload a list of locus tags and retrieve gene ",
-                    "annotations, nucleotide or amino acid sequences, as well ",
-                    "as map between strains."
-                ))),
+                tags$hr(),
 
-                tags$p(HTML(paste0(
-                    "<b>NOTE:</b> We currently supports the following strains ",
-                    "of <em>P. aeruginosa</em>: PAO1, PA14, & LESB58."
-                ))),
+                tags$div(
 
-                tags$p("To get started, select one of the options below:"),
+                    tags$p(HTML(paste0(
+                        "Welcome to NAME HERE, a Shiny app designed to faciltate ",
+                        "analyses with <em>Pseudomonas aeruginosa</em>. Here you ",
+                        "can upload a list of locus tags and retrieve gene ",
+                        "annotations, nucleotide or amino acid sequences, as well ",
+                        "as map between strains. For more information, see the ",
+                        actionLink("linkAbout", "About"),
+                        " page."
+                    ))),
 
-                br(),
+                    tags$p(HTML(paste0(
+                        "<b>NOTE:</b> We currently support the following strains ",
+                        "of <em>P. aeruginosa</em>: PAO1, PA14, & LESB58."
+                    ))),
 
-                div(
-                    actionButton(
-                        "anno",
-                        "Get Annotations & Sequences",
-                        style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50;"
-                    ),
+                    tags$p("To get started, select one of the options below:"),
 
-                    HTML("&nbsp;&nbsp;&nbsp;"),
+                    br(),
 
-                    actionButton(
-                        "ortho",
-                        "Perform Ortholog Mapping",
-                        style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50;"
+                    div(
+                        actionButton(
+                            "anno",
+                            "Get Annotations & Sequences",
+                            style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50;"
+                        ),
+
+                        HTML("&nbsp;&nbsp;&nbsp;"),
+
+                        actionButton(
+                            "ortho",
+                            "Perform Ortholog Mapping",
+                            style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50;"
+                        )
                     )
                 )
             )
-        )
-    ),
+        ),
 
-    #################################
-    ## Annotation and Sequence Tab ##
-    #################################
-    tabPanel(
-        value = "annos",
-        "Annotations and Sequences",
-        sidebarLayout(
+        #################################
+        ## Annotation and Sequence Tab ##
+        #################################
+        tabPanel(
+            value = "annos",
+            "Annotations and Sequences",
+            sidebarLayout(
 
-            #################
-            # SIDEBAR PANEL #
-            #################
-            sidebarPanel(
+                #################
+                # SIDEBAR PANEL #
+                #################
+                sidebarPanel(
 
-                tags$p(div(HTML(
-                    "This app is designed to retreive annotations, nucleotide, ",
-                    "and amino acid sequences for three strains of ",
-                    "<em>P. aeruginosa</em>, namely PAO1, PA14, and LESB58."
-                ))),
+                    tags$p(div(HTML(
+                        "This app is designed to retreive annotations, nucleotide, ",
+                        "and amino acid sequences for three strains of ",
+                        "<em>P. aeruginosa</em>, namely PAO1, PA14, and LESB58."
+                    ))),
 
-                tags$p(div(HTML(
-                    "<b>NOTE:</b> Non-matching IDs are returned in a separate ",
-                    "table to the user. IDs must still be in the proper format, ",
-                    "(e.g. PA0000 for strain PAO1) to be recognized and parsed ",
-                    "correctly."
-                ))),
+                    tags$p(div(HTML(
+                        "<b>NOTE:</b> Non-matching IDs are returned in a separate ",
+                        "table to the user. IDs must still be in the proper format, ",
+                        "(e.g. PA0000 for strain PAO1) to be recognized and parsed ",
+                        "correctly."
+                    ))),
 
-                tags$br(),
+                    tags$br(),
 
-                # Dropdown to pick strain
-                selectInput(
-                    "strainChoice",
-                    "Please select your strain:",
-                    c("PAO1" = "PAO1",
-                      "PA14" = "PA14",
-                      "LESB58" = "LESB58")
+                    # Dropdown to pick strain
+                    selectInput(
+                        "strainChoice",
+                        "Please select your strain:",
+                        c("PAO1" = "PAO1",
+                          "PA14" = "PA14",
+                          "LESB58" = "LESB58")
+                    ),
+
+
+                    # Place to paste your genes of interest
+                    textAreaInput(
+                        "pastedInput",
+                        "Paste your list of locus tags, one per line:",
+                        placeholder = "Your genes here...",
+                        height = "300px"
+                    ),
+
+
+                    # Button which triggers results to display. Most code depends on
+                    # this input state changing before running
+                    actionButton(
+                        "search",
+                        "Search",
+                        icon = icon("search"),
+                        style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c; width: 200px"
+                    ),
+
+
+                    # Download button for annotation table, to be created with
+                    # renderUI()
+                    uiOutput("resultTable_dl"),
+
+
+                    # Download button for nucleotide and amino acid sequences, hidden
+                    # until data is available
+                    uiOutput("seqs_dl"),
+
+                    tags$hr()
                 ),
 
+                ##############
+                # MAIN PANEL #
+                ##############
+                mainPanel(
 
-                # Place to paste your genes of interest
-                textAreaInput(
-                    "pastedInput",
-                    "Paste your list of locus tags, one per line:",
-                    placeholder = "Your genes here...",
-                    height = "300px"
+                    # Render panel for the matched results/annotations (showing
+                    # displayTable())
+                    h3("Your results will be displayed below:"),
+                    tags$br(),
+                    dataTableOutput("displayTable"),
+
+                    # Output for the non-matching genes. Using uiOutput() here so that
+                    # it only displays if there are non-matching genes (i.e. the table
+                    # which holds said genes has more than 0 rows)
+                    uiOutput("missingGenesPanel")
+                )
+            )
+        ),
+
+        ##########################
+        ## Ortholog Mapping Tab ##
+        ##########################
+        tabPanel(
+            value = "orthos",
+            "Ortholog Mapping",
+            tags$div(
+                class = "jumbotron",
+                tags$h2("Coming soon!")
+            )
+        ),
+
+        ###############
+        ## About Tab ##
+        ###############
+        tabPanel(
+            value = "about",
+            "About",
+
+            tags$div(
+                class = "jumbotron",
+
+                tags$p("Source code for this app is available at the ",
+                       tags$a(href = "https://github.com/travis-m-blimkie/getPASequences", "Github page"),
+                       " under the MIT license."
                 ),
 
-
-                # Button which triggers results to display. Most code depends on
-                # this input state changing before running
-                actionButton(
-                    "search",
-                    "Search",
-                    icon = icon("search"),
-                    style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c; width: 200px"
+                tags$p(
+                    "The data used by this app for annotations and sequences comes from the ",
+                    tags$a(href = "https://pseudomonas.com", "Pseudomonas Genome Database"),
+                    ", version 18.1."
                 ),
 
+                tags$p(
+                    "Ortholog information was obtained from ",
+                    tags$a(href = "http://pseudoluge.pseudomonas.com/", "OrtholugeDB"),
+                    ", version 1.0."
+                ),
 
-                # Download button for annotation table, to be created with
-                # renderUI()
-                uiOutput("resultTable_dl"),
+                tags$hr(),
 
+                tags$p("This app uses the following R packages:"),
+                tags$p(
+                    tags$dt(tags$a(href = "https://shiny.rstudio.com/", "Shiny")),
+                    tags$dd("Framework for app construction."),
 
-                # Download button for nucleotide and amino acid sequences, hidden
-                # until data is available
-                uiOutput("seqs_dl"),
+                    tags$br(),
 
-                tags$hr()
-            ),
+                    tags$dt(tags$a(href = "https://deanattali.com/shinyjs/", "ShinyJS")),
+                    tags$dd("Additional app functionality."),
 
-            ##############
-            # MAIN PANEL #
-            ##############
-            mainPanel(
+                    tags$br(),
 
-                # Render panel for the matched results/annotations (showing
-                # displayTable())
-                h3("Your results will be displayed below:"),
-                tags$br(),
-                dataTableOutput("displayTable"),
+                    tags$dt(tags$a(href = "https://www.tidyverse.org/", "The Tidyverse")),
+                    tags$dd("Data manipulation functions, as well as reading and writing data."),
 
-                # Output for the non-matching genes. Using uiOutput() here so that
-                # it only displays if there are non-matching genes (i.e. the table
-                # which holds said genes has more than 0 rows)
-                uiOutput("missingGenesPanel")
+                    tags$br(),
+
+                    tags$dt(tags$a(href = "https://cran.r-project.org/package=seqinr", "seqinr")),
+                    tags$dd("Writing output fasta files.")
+                )
             )
         )
-    ),
-
-    ##########################
-    ## Ortholog Mapping Tab ##
-    ##########################
-    tabPanel(
-        value = "orthos",
-        "Ortholog Mapping",
-        tags$div(
-            class = "jumbotron",
-            tags$p("Coming soon!")
-        )
-    ),
-
-    ###############
-    ## About Tab ##
-    ###############
-    tabPanel(
-        value = "about",
-        "About",
-
-        tags$div(
-            class = "jumbotron",
-
-            tags$p("Source code for this app is available at the ",
-                   shiny::tags$a(
-                       href = "https://github.com/travis-m-blimkie/getPASequences",
-                       "Github page"
-                   ),
-                   " under the MIT license."
-            ),
-
-            tags$p(
-                "The data used by this app for annotations and sequences comes from the ",
-                shiny::tags$a(
-                    href = "https://pseudomonas.com",
-                    "Pseudomonas Genome Database"
-                ),
-                ", version 18.1."
-            ),
-
-            tags$p(
-                "Ortholog information was obtained from ",
-                shiny::tags$a(
-                    href = "http://pseudoluge.pseudomonas.com/",
-                    "OrtholugeDB"
-                ),
-                ", version 1.0."
-            ),
-
-            tags$p("NAME HERE uses the following R packages:"),
-            tags$p(
-                    tags$dt("Shiny and ShinyJS"),
-                    tags$ul(tags$dd("Provide the framework for app construction.")),
-
-                    tags$dt("The Tidyverse"),
-                    tags$ul(tags$dd("Data manipulation functions, as well as reading and writing data.")),
-
-                    tags$dt("seqinr"),
-                    tags$ul(tags$dd("Writing fasta files."))
-            )
-        )
-    )
-))
+    ))
 
 
 
@@ -253,6 +259,12 @@ server <- function(input, output, session) {
     observeEvent(input$ortho, {
         updateNavbarPage(session, inputId = "navBarLayout", selected = "orthos")
     }, ignoreInit = TRUE)
+
+    # Switch to the About panel
+    observeEvent(input$linkAbout, {
+        updateNavbarPage(session, inputId = "navBarLayout", selected = "about")
+    }, ignoreInit = TRUE)
+
 
     # Extract the genes to be mapped, using a single regex to match locus tags
     # from any of the three supported strains
