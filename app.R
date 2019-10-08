@@ -341,7 +341,8 @@ server <- function(input, output, session) {
                           scrollY = "500px",
                           scrollCollapse = TRUE,
                           paging = FALSE),
-        rownames = FALSE
+        rownames = FALSE,
+        selection = "none"
         )
 
 
@@ -355,7 +356,8 @@ server <- function(input, output, session) {
                           scrollY = "250px",
                           scrollCollapse = TRUE,
                           paging = FALSE),
-        rownames = FALSE
+        rownames = FALSE,
+        selection = "none"
         )
 
         # This chunk renders the results only if there are non-matching genes
