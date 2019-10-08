@@ -2,14 +2,16 @@
 # This script covers the munging of gene annotations for each of the supported
 # Pseduomonas aeruginosa strains. If one wishes to update the database files
 # used in the mapping, this is the place to start! Simply drop the new files
-# into the `data` folder and run through this code. Note files are downloaded
-# from "pseudomonas.com", as the TSV annotations on the strain info page.
+# into the `raw_data` folder and run through this code.
+# NOTE: files are downloaded from "pseudomonas.com", as the TSV annotations on
+# the strain info page.
+
 
 # Load libraries
 library(tidyverse)
 
 # List the annotation files to be used
-fileNames <- list.files("./data/", pattern = ".txt$")
+fileNames <- list.files("./rawData/", pattern = ".txt$")
 
 # Create variable names for each file/strain
 varNames <- fileNames %>%
