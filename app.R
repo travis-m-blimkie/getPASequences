@@ -5,6 +5,7 @@ library(shiny)
 library(shinythemes)
 library(shinyjs)
 library(seqinr)
+library(DT)
 library(tidyverse)
 
 pao1Data <- readRDS("data/Pseudomonas_aeruginosa_PAO1_107.Rds")
@@ -20,13 +21,15 @@ ui <- fluidPage(
     navbarPage(
         id = "navBarLayout",
 
-        # Settings for the NavBar layout
+        ####################################
+        ## Settings for the NavBar layout ##
+        ####################################
 
         # Blank title, as we want the first tab to be our title. Maybe place an
-        # image/logo here in the future.
+        # image/logo here in the future...
         title = HTML(""),
 
-        # What is shown in the browser window
+        # Title that's shown in the browser window
         windowTitle = "getPASequences",
 
         # Make the navbar collapsible
@@ -58,8 +61,7 @@ ui <- fluidPage(
                         "can upload a list of locus tags and retrieve gene ",
                         "annotations, nucleotide or amino acid sequences, as well ",
                         "as map between strains. For more information, see the ",
-                        actionLink("linkAbout", "About"),
-                        " page."
+                        actionLink("linkAbout", "About"), " page."
                     ))),
 
                     tags$p(HTML(paste0(
@@ -96,11 +98,10 @@ ui <- fluidPage(
         tabPanel(
             value = "annos",
             "Annotations and Sequences",
+
             sidebarLayout(
 
-                #################
-                # SIDEBAR PANEL #
-                #################
+                ### SIDEBAR PANEL ###
                 sidebarPanel(
 
                     tags$p(div(HTML(
@@ -159,21 +160,23 @@ ui <- fluidPage(
                     tags$hr()
                 ),
 
-                ##############
-                # MAIN PANEL #
-                ##############
+                ### MAIN PANEL ###
                 mainPanel(
 
                     # Render panel for the matched results/annotations (showing
-                    # displayTable())
+                    # `displayTable()`). NOTE that we want use the DT fnctions
+                    # when rendering output tables. There are `shiny::` versions
+                    # of the same functions, and although DT is loaded later, we
+                    # want to be explicit just in case.
                     h3("Your results will be displayed below:"),
                     tags$br(),
-                    dataTableOutput("displayTable"),
+                    DT::dataTableOutput(outputId = "displayTable"),
 
-                    # Output for the non-matching genes. Using uiOutput() here so that
-                    # it only displays if there are non-matching genes (i.e. the table
-                    # which holds said genes has more than 0 rows)
-                    uiOutput("missingGenesPanel")
+                    # Output for the non-matching genes. Using `uiOutput()` here
+                    # so that it only displays if there are non-matching genes
+                    # (i.e. the table which holds said genes has more than 0
+                    # rows).
+                    uiOutput(outputId = "missingGenesPanel")
                 )
             )
         ),
@@ -330,31 +333,34 @@ server <- function(input, output, session) {
 
         # Create and render the table of results; prevent updating the results
         # table when input IDs are changed until the search button is pressed
-        # again
-        output$displayTable <- renderDataTable({
+        # again. As before, we are being explicit with our use of DT functions.
+        output$displayTable <- DT::renderDataTable({
             isolate(displayTable())
         }, options = list(searching = FALSE,
                           scrollX = "100%",
                           scrollY = "500px",
                           scrollCollapse = TRUE,
-                          paging = FALSE)
+                          paging = FALSE),
+        rownames = FALSE
         )
 
 
         # Create the output for non-matching genes, if present. This first chunk
         # creates the table which will be rendered conditionally in the next
-        # block
-        output$missingGenesTable <- renderDataTable({
+        # block. As before, we are being explicit with our use of DT functions.
+        output$missingGenesTable <- DT::renderDataTable({
             isolate(noMatchGenes())
         }, options = list(searching = FALSE,
                           scrollX = "100%",
                           scrollY = "250px",
                           scrollCollapse = TRUE,
-                          paging = FALSE)
+                          paging = FALSE),
+        rownames = FALSE
         )
 
         # This chunk renders the results only if there are non-matching genes
-        # (see above chunk)
+        # (see above chunk). As before, we are being explicit with our use of DT
+        # functions.
         output$missingGenesPanel <- renderUI({
             isolate(noMatchGenes())
 
@@ -364,7 +370,7 @@ server <- function(input, output, session) {
                 return(tagList(
                     tags$hr(),
                     tags$h3("The following submitted genes had no matches:"),
-                    dataTableOutput("missingGenesTable"),
+                    DT::dataTableOutput(outputId = "missingGenesTable"),
                     tags$br(),
                     tags$br()
                 ))
@@ -376,10 +382,10 @@ server <- function(input, output, session) {
         # chunk (renderUI())
         output$resultTable <- downloadHandler(
             filename = function() {
-                paste0(input$strainChoice, "_annotations.csv")
+                paste0(input$strainChoice, "_annotations.txt")
             },
             content = function(file) {
-                write.csv(displayTable(), file, row.names = FALSE, sep = "\t")
+                write_delim(displayTable(), file, delim = "\t")
             }
         )
 
