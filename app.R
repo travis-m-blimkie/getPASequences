@@ -8,9 +8,9 @@ library(seqinr)
 library(DT)
 library(tidyverse)
 
-pao1Data <- readRDS("data/Pseudomonas_aeruginosa_PAO1_107.Rds")
-pa14Data <- readRDS("data/Pseudomonas_aeruginosa_UCBPP-PA14_109.Rds")
-lesb58Data <- readRDS("data/Pseudomonas_aeruginosa_LESB58_125.Rds")
+pao1Data <- readRDS("data/Pseudomonas_aeruginosa_PAO1_107.rds")
+pa14Data <- readRDS("data/Pseudomonas_aeruginosa_UCBPP-PA14_109.rds")
+lesb58Data <- readRDS("data/Pseudomonas_aeruginosa_LESB58_125.rds")
 
 
 # Define the UI elements --------------------------------------------------
