@@ -56,17 +56,18 @@ ui <- fluidPage(
                 tags$div(
 
                     tags$p(HTML(paste0(
-                        "Welcome to NAME HERE, a Shiny app designed to faciltate ",
-                        "analyses with <em>Pseudomonas aeruginosa</em>. Here you ",
-                        "can upload a list of locus tags and retrieve gene ",
-                        "annotations, nucleotide or amino acid sequences, as well ",
-                        "as map between strains. For more information, see the ",
+                        "Welcome to PATool, a Shiny app designed to faciltate ",
+                        "analyses with <em>Pseudomonas aeruginosa</em>. Here ",
+                        "you can upload a list of locus tags and retrieve ",
+                        "gene annotations, nucleotide or amino acid ",
+                        "sequences, as well as map between strains. For more ",
+                        "information, see the ",
                         actionLink("linkAbout", "About"), " page."
                     ))),
 
                     tags$p(HTML(paste0(
-                        "<b>NOTE:</b> We currently support the following strains ",
-                        "of <em>P. aeruginosa</em>: PAO1, PA14, & LESB58."
+                        "<b>NOTE:</b> We currently support the following ",
+                        "strains of <em>P. aeruginosa</em>: PAO1, PA14, & LESB58."
                     ))),
 
                     tags$p("To get started, select one of the options below:"),
@@ -105,16 +106,17 @@ ui <- fluidPage(
                 sidebarPanel(
 
                     tags$p(div(HTML(
-                        "This app is designed to retreive annotations, nucleotide, ",
-                        "and amino acid sequences for three strains of ",
-                        "<em>P. aeruginosa</em>, namely PAO1, PA14, and LESB58."
+                        "This app is designed to retreive annotations, ",
+                        "nucleotide, and amino acid sequences for three ",
+                        "strains of <em>P. aeruginosa</em>, namely PAO1, PA14,",
+                        " and LESB58."
                     ))),
 
                     tags$p(div(HTML(
-                        "<b>NOTE:</b> Non-matching IDs are returned in a separate ",
-                        "table to the user. IDs must still be in the proper format, ",
-                        "(e.g. PA0000 for strain PAO1) to be recognized and parsed ",
-                        "correctly."
+                        "<b>NOTE:</b> Non-matching IDs are returned in a ",
+                        "separate table. IDs must still be in the proper ",
+                        "format (e.g. PA0000 for strain PAO1) to be recognized",
+                        " and parsed correctly."
                     ))),
 
                     tags$br(),
@@ -277,12 +279,12 @@ server <- function(input, output, session) {
     })
 
 
-    # Delay all code until the search button is pressed. End of this is noted
-    # with a comment.
+    ### Delay all code until the search button is pressed. End of this is noted
+    ### with a comment.
     observeEvent(input$search, {
 
 
-        # Convert to a data frame, and fix column name for easy joining later
+        # Convert to a data frame, and fix column name for easy joining later.
         myGenesTable <- reactive({
             req(myGenes())
 
@@ -293,8 +295,8 @@ server <- function(input, output, session) {
         })
 
 
-        # Map the input genes, dependent on strain. Notice we use inner_join()
-        # here, which means genes with no hits must be handled separately
+        # Map the input genes, dependent on strain. Notice we use `inner_join()`
+        # here, which means genes with no hits must be handled separately.
         filteredTable <- reactive({
             req(myGenesTable(), input$strainChoice)
 
@@ -315,17 +317,16 @@ server <- function(input, output, session) {
 
         # Create table without sequence to facilitate display. This is also the
         # annotation table the user downloads with the "Download Annotations"
-        # button
+        # button.
         displayTable <- reactive({
-
-            select(filteredTable(), -c(Nucleotide_Sequence, Amino_Acid_Sequence)) %>%
+            filteredTable() %>%
+                select(-c(Nucleotide_Sequence, Amino_Acid_Sequence)) %>%
                 arrange(Locus_Tag) %>%
-                dplyr::rename("Locus Tag" = Locus_Tag,
-                              "Product" = Product_Name)
+                dplyr::rename("Locus Tag" = Locus_Tag, "Product" = Product_Name)
         })
 
 
-        # Now we deal with any genes submitted that didn't have a match
+        # Now we deal with any genes submitted that didn't have a match.
         noMatchGenes <- reactive({
             anti_join(myGenesTable(), filteredTable(), by = "Locus_Tag")
         })
@@ -362,7 +363,7 @@ server <- function(input, output, session) {
 
         # This chunk renders the results only if there are non-matching genes
         # (see above chunk). As before, we are being explicit with our use of DT
-        # functions.
+        # functions beacuse of potential overlap with `shiny` functions.
         output$missingGenesPanel <- renderUI({
             isolate(noMatchGenes())
 
@@ -381,7 +382,7 @@ server <- function(input, output, session) {
 
 
         # Download file for displayTable (annotations) to be shown with next
-        # chunk (renderUI())
+        # chunk (`renderUI()`).
         output$resultTable <- downloadHandler(
             filename = function() {
                 paste0(input$strainChoice, "_annotations.txt")
@@ -392,7 +393,7 @@ server <- function(input, output, session) {
         )
 
         # Rendering the download button once displayTable() is populated with
-        # data (see above chunk)
+        # data (see above chunk).
         output$resultTable_dl <- renderUI({
             if(nrow(displayTable()) != 0) {
                 tagList(
@@ -413,7 +414,7 @@ server <- function(input, output, session) {
         # Tables for nt and aa sequences are created independently, but the
         # buttons to download them are rendered at the same time.
 
-        # First the downloadHandler() for nucleotide sequences i.e. ntSeqs
+        # First the downloadHandler() for nucleotide sequences i.e. ntSeqs.
         output$ntSeqs <- downloadHandler(
             filename = function() {
                 paste0(input$strainChoice, "_nucleotideSequences.fasta")
@@ -434,7 +435,7 @@ server <- function(input, output, session) {
         )
 
 
-        # The the downloadHandler() for amino acid sequences i.e. aaSeqs
+        # The the downloadHandler() for amino acid sequences i.e. aaSeqs.
         output$aaSeqs <- downloadHandler(
             filename = function() {
                 paste0(input$strainChoice, "_proteinSequences.fasta")
@@ -456,7 +457,7 @@ server <- function(input, output, session) {
 
 
         # Now render both sequence download buttons simultaneously, along with
-        # some specific styling via tagList()
+        # some specific styling via `tagList()`.
         output$seqs_dl <- renderUI({
             if (nrow(displayTable()) != 0) {
                 tagList(
@@ -467,7 +468,7 @@ server <- function(input, output, session) {
                     ),
 
                     # Divider so both sequence download buttons render on the
-                    # same line, with a small separation
+                    # same line, with a small separation between them.
                     div(
                         style = "display: inline-block; vertical-align: top; width: 10px;",
                         HTML("<br>")
@@ -482,7 +483,7 @@ server <- function(input, output, session) {
             }
         })
 
-    }) # Closes the observation based on search button input
+    }) ### Closes the observation based on search button input
 }
 
 

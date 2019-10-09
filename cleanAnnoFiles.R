@@ -18,8 +18,9 @@ varNames <- fileNames %>%
   map_chr(~str_replace(., pattern = "\\.txt", replacement = ""))
 
 # Read in the files, and set the names of the list
-myFiles <- fileNames %>%
-  map(~read_tsv(paste0("./", .), comment = "#")) %>%
+myFiles <- fileNames %>% map(
+  ~read_tsv(paste0("./rawData/", .), comment = "#")
+) %>%
   set_names(varNames)
 
 # Select and rename desired columns
@@ -37,8 +38,11 @@ selectCols <- myFiles %>%
 
 # Replace NA's in the "Name" column with the locus tag
 fixName <- selectCols %>%
-  map(~mutate(., Name = case_when(is.na(Name) ~ Locus_Tag, TRUE ~ Name)))
+  map(~mutate(., Name = case_when(is.na(Name) ~ "", TRUE ~ Name)))
 
 # Save the cleaned files as Rds objects
-map2(fixName, names(fixName),
-     ~saveRDS(.x, file = paste0("./data/", .y, ".rds")))
+map2(
+  fixName,
+  names(fixName),
+  ~saveRDS(.x, file = paste0("./data/", .y, ".rds"))
+)
