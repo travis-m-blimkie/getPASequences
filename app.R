@@ -66,8 +66,8 @@ ui <- fluidPage(
                     ))),
 
                     tags$p(HTML(paste0(
-                        "<b>NOTE:</b> We currently support the following ",
-                        "strains of <em>P. aeruginosa</em>: PAO1, PA14, & LESB58."
+                        "We currently support the following strains of ",
+                        "<em>P. aeruginosa</em>: PAO1, PA14, & LESB58."
                     ))),
 
                     tags$p("To get started, select one of the options below:"),
@@ -173,6 +173,8 @@ ui <- fluidPage(
                     h3("Your results will be displayed below:"),
                     tags$br(),
                     DT::dataTableOutput(outputId = "displayTable"),
+
+                    uiOutput(outputId = "resultSummary"),
 
                     # Output for the non-matching genes. Using `uiOutput()` here
                     # so that it only displays if there are non-matching genes
@@ -325,6 +327,14 @@ server <- function(input, output, session) {
                 dplyr::rename("Locus Tag" = Locus_Tag, "Product" = Product_Name)
         })
 
+        # Get numbers of genes to be included as a summary.
+        numGenes <- reactive({
+            list(
+                submitted = nrow(myGenesTable()),
+                matched = nrow(displayTable())
+            )
+        })
+
 
         # Now we deal with any genes submitted that didn't have a match.
         noMatchGenes <- reactive({
@@ -341,10 +351,25 @@ server <- function(input, output, session) {
                           scrollX = "100%",
                           scrollY = "500px",
                           scrollCollapse = TRUE,
-                          paging = FALSE),
+                          paging = FALSE,
+                          dom = "t"),
         rownames = FALSE,
         selection = "none"
         )
+
+        # Print some text describing the number of matched/submitted genes.
+        output$resultSummary <- renderUI({
+            isolate(displayTable())
+
+            tagList(
+                tags$br(),
+
+                tags$p(paste0(
+                    "Matched ", numGenes()$matched, " out of ",
+                    numGenes()$submitted, " genes submitted."
+                ))
+            )
+        })
 
 
         # Create the output for non-matching genes, if present. This first chunk
@@ -356,7 +381,8 @@ server <- function(input, output, session) {
                           scrollX = "100%",
                           scrollY = "250px",
                           scrollCollapse = TRUE,
-                          paging = FALSE),
+                          paging = FALSE,
+                          dom = "t"),
         rownames = FALSE,
         selection = "none"
         )

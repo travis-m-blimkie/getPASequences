@@ -10,8 +10,10 @@
 # Load libraries
 library(tidyverse)
 
-# List the annotation files to be used
-fileNames <- list.files("./rawData/", pattern = ".txt$")
+# List the annotation files to be used. Note the use of inverted `grep()` to
+# omit the ortholog files and only grab the annotation files.
+fileNames <- list.files("./rawData/", pattern = "txt$") %>%
+  grep(., pattern = "orthologs", value = TRUE, invert = TRUE)
 
 # Create variable names for each file/strain
 varNames <- fileNames %>%
