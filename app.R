@@ -61,8 +61,8 @@ ui <- fluidPage(
                         "you can upload a list of locus tags and retrieve ",
                         "gene annotations, nucleotide or amino acid ",
                         "sequences, as well as map between strains. For more ",
-                        "information, see the ",
-                        actionLink("linkAbout", "About"), " page."
+                        "information, see the <b>",
+                        actionLink("linkAbout", "About"), "</b> page."
                     ))),
 
                     tags$p(HTML(paste0(
@@ -78,7 +78,8 @@ ui <- fluidPage(
                         actionButton(
                             "anno",
                             "Get Annotations & Sequences",
-                            style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50;"
+                            class = "btn btn-primary btn-lg",
+                            style = "color: #2c3e50; background-color: #fff; border-color: #2c3e50;"
                         ),
 
                         HTML("&nbsp;&nbsp;&nbsp;"),
@@ -86,6 +87,7 @@ ui <- fluidPage(
                         actionButton(
                             "ortho",
                             "Perform Ortholog Mapping",
+                            class = "btn btn-primary btn-lg",
                             style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50;"
                         )
                     )
@@ -141,7 +143,7 @@ ui <- fluidPage(
 
 
                     # Button which triggers results to display. Most code depends on
-                    # this input state changing before running
+                    # this input state changing before running (sort of?).
                     actionButton(
                         "search",
                         "Search",
@@ -151,12 +153,12 @@ ui <- fluidPage(
 
 
                     # Download button for annotation table, to be created with
-                    # renderUI()
+                    # `renderUI()`.
                     uiOutput("resultTable_dl"),
 
 
                     # Download button for nucleotide and amino acid sequences, hidden
-                    # until data is available
+                    # until data is available.
                     uiOutput("seqs_dl"),
 
                     tags$hr()
@@ -166,8 +168,8 @@ ui <- fluidPage(
                 mainPanel(
 
                     # Render panel for the matched results/annotations (showing
-                    # `displayTable()`). NOTE that we want use the DT fnctions
-                    # when rendering output tables. There are `shiny::` versions
+                    # `displayTable()`). NOTE that we want use the DT functions
+                    # when rendering output tables. There are `shiny` versions
                     # of the same functions, and although DT is loaded later, we
                     # want to be explicit just in case.
                     h3("Your results will be displayed below:"),
@@ -257,17 +259,17 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
 
-    # Switch to the anno tab panel
+    # Switch to the anno tab panel via the button
     observeEvent(input$anno, {
         updateNavbarPage(session, inputId = "navBarLayout", selected = "annos")
     }, ignoreInit = TRUE)
 
-    # Switch to the ortholog tab panel
+    # Switch to the ortholog tab panel via the button
     observeEvent(input$ortho, {
         updateNavbarPage(session, inputId = "navBarLayout", selected = "orthos")
     }, ignoreInit = TRUE)
 
-    # Switch to the About panel
+    # Switch to the About panel via link in the intro text
     observeEvent(input$linkAbout, {
         updateNavbarPage(session, inputId = "navBarLayout", selected = "about")
     }, ignoreInit = TRUE)
