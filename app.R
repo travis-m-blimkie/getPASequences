@@ -108,13 +108,6 @@ ui <- fluidPage(
                 sidebarPanel(
 
                     tags$p(div(HTML(
-                        "This app is designed to retreive annotations, ",
-                        "nucleotide, and amino acid sequences for three ",
-                        "strains of <em>P. aeruginosa</em>, namely PAO1, PA14,",
-                        " and LESB58."
-                    ))),
-
-                    tags$p(div(HTML(
                         "<b>NOTE:</b> Non-matching IDs are returned in a ",
                         "separate table. IDs must still be in the proper ",
                         "format (e.g. PA0000 for strain PAO1) to be recognized",
@@ -148,7 +141,7 @@ ui <- fluidPage(
                         "search",
                         "Search",
                         icon = icon("search"),
-                        style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c; width: 200px"
+                        style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c; width: 150px"
                     ),
 
 
@@ -193,9 +186,66 @@ ui <- fluidPage(
         tabPanel(
             value = "orthos",
             "Ortholog Mapping",
-            tags$div(
-                class = "jumbotron",
-                tags$h2("Coming soon!")
+
+            sidebarLayout(
+
+                sidebarPanel(
+                    tags$p(
+                        "Please select the strains for which you wish to ",
+                        "retreive orthologs:"
+                    ),
+
+
+                    # Choose strain 1
+                    div(style = "display: inline-block;vertical-align:top; width: 150px;",
+                        selectInput(
+                            inputId = "strain1",
+                            label = "First Strain:",
+                            choices = c("PAO1" = "PAO1",
+                                        "PA14" = "PA14",
+                                        "LESB58" = "LESB58"),
+                            selected = "PAO1"
+                        )
+                    ),
+
+                    # Separator since we have both dropdowns on one "line"
+                    div(
+                        style = "display: inline-block;vertical-align:top; width: 100px;",
+                        HTML("<br>")
+                    ),
+
+
+                    # Choose strain 2
+                    div(style = "display: inline-block;vertical-align:top; width: 150px;",
+                        selectInput(
+                            inputId = "strain2",
+                            label = "Second Strain:",
+                            choices = c("PAO1" = "PAO1",
+                                        "PA14" = "PA14",
+                                        "LESB58" = "LESB58"),
+                            selected = "PA14"
+                        )
+                    ),
+
+                    # Input area for genes
+                    textAreaInput(
+                        "orthoPastedInput",
+                        "Paste your list of locus tags, one per line:",
+                        placeholder = "Your genes here...",
+                        height = "300px"
+                    ),
+
+                    actionButton(
+                        "orthoSearch",
+                        "Map",
+                        style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px"
+                    ),
+                ),
+
+                mainPanel(
+                    tags$h3("Results here:")
+                )
+
             )
         ),
 
