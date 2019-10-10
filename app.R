@@ -8,9 +8,15 @@ library(seqinr)
 library(DT)
 library(tidyverse)
 
-pao1Data <- readRDS("data/annotations_PAO1_107.rds")
-pa14Data <- readRDS("data/annotations_UCBPP-PA14_109.rds")
-lesb58Data <- readRDS("data/annotations_LESB58_125.rds")
+# Annotation files
+annosPAO1 <- readRDS("data/annotations_PAO1_107.rds")
+annosPA14 <- readRDS("data/annotations_UCBPP-PA14_109.rds")
+annosLESB58 <- readRDS("data/annotations_LESB58_125.rds")
+
+# Ortholog relations
+orthos_PAO1toPA14 <- readRDS("data/orthologs_pao1_pa14.rds")
+orthos_PAO1toLESB58 <- readRDS("data/orthologs_pao1_lesb58.rds")
+orthos_PA14toLESB58 <- readRDS("data/orthologs_pa14_lesb58.rds")
 
 
 # Define the UI elements --------------------------------------------------
@@ -355,13 +361,13 @@ server <- function(input, output, session) {
             req(myGenesTable(), input$strainChoice)
 
             if (input$strainChoice == "PAO1") {
-                inner_join(myGenesTable(), pao1Data, by = "Locus_Tag")
+                inner_join(myGenesTable(), annosPAO1, by = "Locus_Tag")
 
             } else if (input$strainChoice == "PA14") {
-                inner_join(myGenesTable(), pa14Data, by = "Locus_Tag")
+                inner_join(myGenesTable(), annosPA14, by = "Locus_Tag")
 
             } else if (input$strainChoice == "LESB58") {
-                inner_join(myGenesTable(), lesb58Data,  by = "Locus_Tag")
+                inner_join(myGenesTable(), annosLESB58,  by = "Locus_Tag")
 
             } else {
                 return(NULL)
@@ -379,7 +385,7 @@ server <- function(input, output, session) {
                 dplyr::rename("Locus Tag" = Locus_Tag, "Product" = Product_Name)
         })
 
-        # Get numbers of genes to be included as a summary.
+        # Get numbers of genes to be included as a summary below the results table
         numGenes <- reactive({
             list(
                 submitted = nrow(myGenesTable()),
