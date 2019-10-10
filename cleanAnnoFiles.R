@@ -12,18 +12,17 @@ library(tidyverse)
 
 # List the annotation files to be used. Note the use of inverted `grep()` to
 # omit the ortholog files and only grab the annotation files.
-fileNames <- list.files("./rawData/", pattern = "txt$") %>%
+fileNames <- list.files("rawData", pattern = "txt$", full.names = TRUE) %>%
   grep(., pattern = "orthologs", value = TRUE, invert = TRUE)
 
 # Create variable names for each file/strain
 varNames <- fileNames %>%
-  map_chr(~str_replace(., pattern = "\\.txt", replacement = ""))
+  map_chr(~str_remove_all(., pattern = "rawData/Pseudomonas_aeruginosa_|\\.txt"))
 
 # Read in the files, and set the names of the list
 myFiles <- fileNames %>% map(
-  ~read_tsv(paste0("./rawData/", .), comment = "#")
-) %>%
-  set_names(varNames)
+  ~read_tsv(., comment = "#")
+) %>% set_names(varNames)
 
 # Select and rename desired columns
 selectCols <- myFiles %>%
@@ -46,5 +45,5 @@ fixName <- selectCols %>%
 map2(
   fixName,
   names(fixName),
-  ~saveRDS(.x, file = paste0("./data/", .y, ".rds"))
+  ~saveRDS(.x, file = paste0("data/annotations_", .y, ".rds"))
 )
