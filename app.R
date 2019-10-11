@@ -333,15 +333,16 @@ server <- function(input, output, session) {
 
 
     # Extract the genes to be mapped, using a single regex to match locus tags
-    # from any of the three supported strains
+    # from any of the three supported strains.
     myGenes <- reactive({
         req(input$pastedInput)
-        str_extract_all(input$pastedInput, pattern = "PA(14|LES)?_?[0-9]{4,5}")
+        str_extract_all(input$pastedInput, pattern = "PA(14|LES)?_?[0-9]{4,5}") %>%
+            str_trim()
     })
 
 
     ### Delay all code until the search button is pressed. End of this is noted
-    ### with a comment.
+    ### with a comment. Might need to change this...
     observeEvent(input$search, {
 
 
@@ -467,7 +468,7 @@ server <- function(input, output, session) {
 
 
         # Download file for displayTable (annotations) to be shown with next
-        # chunk (`renderUI()`).
+        # chunk via `renderUI()`.
         output$resultTable <- downloadHandler(
             filename = function() {
                 paste0(input$strainChoice, "_annotations.txt")
@@ -520,7 +521,7 @@ server <- function(input, output, session) {
         )
 
 
-        # The the downloadHandler() for amino acid sequences i.e. aaSeqs.
+        # The the `downloadHandler()` for amino acid sequences i.e. aaSeqs.
         output$aaSeqs <- downloadHandler(
             filename = function() {
                 paste0(input$strainChoice, "_proteinSequences.fasta")
