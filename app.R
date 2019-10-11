@@ -124,18 +124,19 @@ ui <- fluidPage(
 
                     # Dropdown to pick strain
                     selectInput(
-                        "strainChoice",
-                        "Please select your strain:",
-                        c("PAO1" = "PAO1",
-                          "PA14" = "PA14",
-                          "LESB58" = "LESB58")
+                        inputId = "strainChoice",
+                        label = "Please select your strain:",
+                        choices = c("PAO1" = "PAO1",
+                                    "PA14" = "PA14",
+                                    "LESB58" = "LESB58"),
+                        width = "50%"
                     ),
 
 
                     # Place to paste your genes of interest
                     textAreaInput(
-                        "pastedInput",
-                        "Paste your list of locus tags, one per line:",
+                        inputId = "pastedInput",
+                        label = "Paste your list of locus tags, one per line:",
                         placeholder = "Your genes here...",
                         height = "300px"
                     ),
@@ -144,8 +145,8 @@ ui <- fluidPage(
                     # Button which triggers results to display. Most code depends on
                     # this input state changing before running (sort of?).
                     actionButton(
-                        "search",
-                        "Search",
+                        inputId = "search",
+                        label = "Search",
                         icon = icon("search"),
                         style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c; width: 150px"
                     ),
@@ -191,7 +192,7 @@ ui <- fluidPage(
         ##########################
         tabPanel(
             value = "orthos",
-            "Ortholog Mapping",
+            title = "Ortholog Mapping",
 
             sidebarLayout(
 
