@@ -109,11 +109,9 @@ renameOrthoCols <- function(dataFrame, strains) {
 orthoFiles <- list.files("rawData/", pattern = "txt$") %>%
   grep(., pattern = "orthologs", value = TRUE, invert = FALSE)
 
-
 # Create variable names for each file/strain
 orthoNames <- orthoFiles %>%
   map_chr(~str_remove_all(., pattern = "orthologs_|\\.txt"))
-
 
 # Read in the files, and set the names of the list
 orthoData_1 <- orthoFiles %>% map(
