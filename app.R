@@ -62,7 +62,7 @@ ui <- fluidPage(
                 tags$div(
 
                     tags$p(HTML(paste0(
-                        "Welcome to PATool, a Shiny app designed to faciltate ",
+                        "Welcome to PATool, a Shiny app designed to facilitate ",
                         "analyses with <em>Pseudomonas aeruginosa</em>. Here ",
                         "you can upload a list of locus tags and retrieve ",
                         "gene annotations, nucleotide or amino acid ",
@@ -116,8 +116,8 @@ ui <- fluidPage(
                     tags$p(div(HTML(
                         "<b>NOTE:</b> Non-matching IDs are returned in a ",
                         "separate table. IDs must still be in the proper ",
-                        "format (e.g. PA0000 for strain PAO1) to be recognized",
-                        " and parsed correctly."
+                        "format (e.g. PA0000 for strain PAO1) to be recognized ",
+                        "and parsed correctly."
                     ))),
 
                     tags$br(),
