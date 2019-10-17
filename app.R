@@ -146,7 +146,7 @@ ui <- fluidPage(
                     # this input state changing before running (sort of?).
                     actionButton(
                         inputId = "search",
-                        label = "Search",
+                        label = HTML("<b>Search</b>"),
                         icon = icon("search"),
                         style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c; width: 150px"
                     ),

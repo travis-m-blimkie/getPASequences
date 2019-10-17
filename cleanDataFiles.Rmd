@@ -1,5 +1,8 @@
 ---
 title: "Cleaning Raw Data files"
+output: html_document
+editor_options: 
+  chunk_output_type: console
 ---
 
 
@@ -111,7 +114,7 @@ orthoFiles <- list.files("rawData/", pattern = "txt$") %>%
 
 # Create variable names for each file/strain
 orthoNames <- orthoFiles %>%
-  map_chr(~str_remove_all(., pattern = "orthologs_|\\.txt"))
+  map_chr(~str_remove_all(., pattern = "orthologs_|\\.txt") %>% toupper())
 
 # Read in the files, and set the names of the list
 orthoData_1 <- orthoFiles %>% map(
@@ -146,4 +149,33 @@ strainPairs <- names(orthoData_2) %>% map(
 
 # Rename using strain pairs defined above
 orthoData_3 <- map2(orthoData_2, strainPairs, ~renameOrthoCols(.x, strains = .y))
+
+colnames(orthoData_3$PA14_LESB58) <- paste0(colnames(orthoData_3$PA14_LESB58), "_Locus_Tag")
+colnames(orthoData_3$PAO1_LESB58) <- paste0(colnames(orthoData_3$PAO1_LESB58), "_Locus_Tag")
+colnames(orthoData_3$PAO1_PA14) <- paste0(colnames(orthoData_3$PAO1_PA14), "_Locus_Tag")
 ```
+
+
+### Adding annotations
+```{r}
+annoData_4 <- annoData_3 %>% map(~select(., -c(Nucleotide_Sequence, Amino_Acid_Sequence)))
+
+colnames(annoData_4$LESB58_125) <- paste0("LESB58_", colnames(annoData_4$LESB58_125))
+colnames(annoData_4$PAO1_107) <- paste0("PAO1_", colnames(annoData_4$PAO1_107))
+colnames(annoData_4$`UCBPP-PA14_109`) <- paste0("PA14_", colnames(annoData_4$`UCBPP-PA14_109`))
+
+orthoData_4 <- list(
+  PA14_LESB58 = orthoData_3$PA14_LESB58 %>% 
+    left_join(., annoData_4$`UCBPP-PA14_109`) %>% 
+    left_join(., annoData_4$LESB58_125),
+
+  PAO1_LESB58 = orthoData_3$PAO1_LESB58 %>% 
+    left_join(., annoData_4$PAO1_107) %>% 
+    left_join(., annoData_4$LESB58_125),
+  
+  PAO1_PA14 = orthoData_3$PAO1_PA14 %>% 
+    left_join(., annoData_4$PAO1_107) %>% 
+    left_join(., annoData_4$`UCBPP-PA14_109`)
+)
+```
+
