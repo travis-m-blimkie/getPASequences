@@ -25,15 +25,14 @@ mapOrthosGenerally <- function(inputDF, strain1, strain2) {
 
     if (strain1 %in% c("PAO1", "PA14") & strain2 %in% c("PAO1", "PA14")) {
         mappedData <- inner_join(inputDF, orthologs_PAO1_PA14)
-    }
-
-    if (strain1 %in% c("PAO1", "LESB58") & strain2 %in% c("PAO1", "LESB58")) {
+    } else if (strain1 %in% c("PAO1", "LESB58") & strain2 %in% c("PAO1", "LESB58")) {
         mappedData <- inner_join(inputDF, orthologs_PAO1_LESB58)
-    }
-
-    if (strain1 %in% c("PA14", "LESB58") & strain2 %in% c("PA14", "LESB58")) {
+    } else if (strain1 %in% c("PA14", "LESB58") & strain2 %in% c("PA14", "LESB58")) {
         mappedData <- inner_join(inputDF, orthologs_PA14_LESB58)
     }
+
+    # mappedData <- mappedData %>%
+    #     select(matches("Locus_Tag|Name"))
 
     return(mappedData)
 }
@@ -369,7 +368,8 @@ server <- function(input, output, session) {
     # from any of the three supported strains.
     myGenes <- reactive({
         req(input$pastedInput)
-        str_extract_all(input$pastedInput, pattern = "PA(14|LES)?_?[0-9]{4,5}")
+        str_extract_all(input$pastedInput, pattern = "PA(14|LES)?_?[0-9]{4,5}") %>%
+            map(~str_trim(.))
     })
 
 
@@ -633,11 +633,18 @@ server <- function(input, output, session) {
         mappedOrthoGenes <- reactive({
             req(orthoGenesTable())
 
-            part2 <- mapOrthosGenerally(orthoGenesTable(),
-                                        strain1 = input$strain1,
-                                        strain2 = input$strain2)
-            return(part2)
+            mapOrthosGenerally(
+                orthoGenesTable(),
+                strain1 = input$strain1,
+                strain2 = input$strain2
+            )
         })
+
+        # mappedOrthoGenes_display <- reactive({
+        #     mappedOrthoGenes() %>%
+        #
+        # })
+
 
         output$orthoResultPanel <- DT::renderDataTable({
             isolate(mappedOrthoGenes())
@@ -651,11 +658,7 @@ server <- function(input, output, session) {
         selection = "none")
 
 
-    }) # Closing the observeEvent for Map
-
-
-
-
+    }) # Closing the `observeEvent()` for Ortholog Mapping
 }
 
 
