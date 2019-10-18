@@ -268,6 +268,8 @@ ui <- fluidPage(
                         HTML("<b>Map</b>"),
                         style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px"
                     ),
+
+                    uiOutput("mappedOrtho_btn")
                 ),
 
                 ### Main panel code
@@ -383,7 +385,7 @@ server <- function(input, output, session) {
             req(myGenes())
 
             part1 <- data.frame(Genes = myGenes(), stringsAsFactors = FALSE)
-            colnames(part1) <- "Locus_Tag"
+            colnames(part1) <- "Locus Tag"
 
             return(part1)
         })
@@ -395,13 +397,13 @@ server <- function(input, output, session) {
             req(myGenesTable(), input$strainChoice)
 
             if (input$strainChoice == "PAO1") {
-                inner_join(myGenesTable(), annosPAO1, by = "Locus_Tag")
+                inner_join(myGenesTable(), annosPAO1, by = "Locus Tag")
 
             } else if (input$strainChoice == "PA14") {
-                inner_join(myGenesTable(), annosPA14, by = "Locus_Tag")
+                inner_join(myGenesTable(), annosPA14, by = "Locus Tag")
 
             } else if (input$strainChoice == "LESB58") {
-                inner_join(myGenesTable(), annosLESB58,  by = "Locus_Tag")
+                inner_join(myGenesTable(), annosLESB58,  by = "Locus Tag")
 
             } else {
                 return(NULL)
@@ -414,9 +416,8 @@ server <- function(input, output, session) {
         # button.
         displayTable <- reactive({
             filteredTable() %>%
-                select(-c(Nucleotide_Sequence, Amino_Acid_Sequence)) %>%
-                arrange(Locus_Tag) %>%
-                dplyr::rename("Locus Tag" = Locus_Tag, "Product" = Product_Name)
+                select(-c(`Nucleotide Sequence`, `Amino Acid Sequence`)) %>%
+                arrange(`Locus Tag`)
         })
 
         # Get numbers of genes to be included as a summary below the results table
@@ -430,7 +431,7 @@ server <- function(input, output, session) {
 
         # Now we deal with any genes submitted that didn't have a match.
         noMatchGenes <- reactive({
-            anti_join(myGenesTable(), filteredTable(), by = "Locus_Tag")
+            anti_join(myGenesTable(), filteredTable(), by = "Locus Tag")
         })
 
 
@@ -491,7 +492,7 @@ server <- function(input, output, session) {
                 return(tagList(
                     tags$hr(),
                     tags$h3("The following submitted genes had no matches:"),
-                    DT::dataTableOutput(outputId = "missingGenesTable"),
+                    DT::dataTableOutput("missingGenesTable"),
                     tags$br(),
                     tags$br()
                 ))
@@ -541,11 +542,11 @@ server <- function(input, output, session) {
                 write.fasta(
                     as.list(filteredTable()$Nucleotide_Sequence),
                     names = paste0(
-                        filteredTable()$Locus_Tag,
+                        filteredTable()$`Locus Tag`,
                         " | ",
-                        filteredTable()$Name,
+                        filteredTable()$`Name`,
                         "; ",
-                        filteredTable()$Product_Name
+                        filteredTable()$`Description`
                     ),
                     file.out = file
                 )
@@ -562,11 +563,11 @@ server <- function(input, output, session) {
                 write.fasta(
                     as.list(filteredTable()$Amino_Acid_Sequence),
                     names = paste0(
-                        filteredTable()$Locus_Tag,
+                        filteredTable()$`Locus Tag`,
                         " | ",
                         filteredTable()$Name,
                         "; ",
-                        filteredTable()$Product_Name
+                        filteredTable()$Description
                     ),
                     file.out = file
                 )
@@ -625,7 +626,7 @@ server <- function(input, output, session) {
             req(orthoInputGenes(), input$strain1)
 
             part1 <- data.frame(Genes = orthoInputGenes(), stringsAsFactors = FALSE)
-            colnames(part1) <- paste0(input$strain1, "_Locus_Tag")
+            colnames(part1) <- paste0(input$strain1, " Locus Tag")
 
             return(part1)
         })
@@ -640,12 +641,6 @@ server <- function(input, output, session) {
             )
         })
 
-        # mappedOrthoGenes_display <- reactive({
-        #     mappedOrthoGenes() %>%
-        #
-        # })
-
-
         output$orthoResultPanel <- DT::renderDataTable({
             isolate(mappedOrthoGenes())
         }, options = list(searching = FALSE,
@@ -657,7 +652,28 @@ server <- function(input, output, session) {
         rownames = FALSE,
         selection = "none")
 
-
+        # Download button for mapped orthologs
+        output$mappedOrtho_dl <- downloadHandler(
+            filename = function() {
+                paste0(input$strain1, "to", input$strain2, "_orthologs.txt")
+            },
+            content = function(file) {
+                write_delim(mappedOrthoGenes(), file, delim = "\t")
+            }
+        )
+        output$mappedOrtho_btn <- renderUI({
+            if (nrow(mappedOrthoGenes()) != 0) {
+                tagList(
+                    tags$hr(),
+                    downloadButton(
+                        "mappedOrtho_dl",
+                        HTML("<b>Download Orthologs</b>"),
+                        style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c"
+                    ),
+                    tags$br()
+                )
+            }
+        })
     }) # Closing the `observeEvent()` for Ortholog Mapping
 }
 
