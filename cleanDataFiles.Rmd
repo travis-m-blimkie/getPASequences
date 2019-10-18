@@ -37,8 +37,9 @@ annoFiles <- list.files("rawData", pattern = "txt$", full.names = TRUE) %>%
   grep(., pattern = "orthologs", value = TRUE, invert = TRUE)
 
 # Create variable names for each file/strain
-annoNames <- annoFiles %>%
-  map_chr(~str_remove_all(., pattern = "rawData/Pseudomonas_aeruginosa_|\\.txt"))
+annoNames <- annoFiles %>% map_chr(
+  ~str_remove_all(., pattern = "rawData/Pseudomonas_aeruginosa_|\\.txt")
+)
 
 # Read in the files, and set the names of the list
 annoData_1 <- annoFiles %>% map(

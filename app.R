@@ -175,12 +175,12 @@ ui <- fluidPage(
 
                     # Download button for annotation table, to be created with
                     # `renderUI()`.
-                    uiOutput("resultTable_dl"),
+                    uiOutput("resultTable_btn"),
 
 
                     # Download button for nucleotide and amino acid sequences, hidden
                     # until data is available.
-                    uiOutput("seqs_dl"),
+                    uiOutput("seqs_btn"),
 
                     tags$hr()
                 ),
@@ -272,7 +272,7 @@ ui <- fluidPage(
                     uiOutput("mappedOrtho_btn")
                 ),
 
-                ### Main panel code
+                ### Main Panel ###
                 mainPanel(
                     tags$h3("Your results will be displayed below:"),
                     tags$br(),
@@ -312,28 +312,25 @@ ui <- fluidPage(
                 tags$hr(),
 
                 tags$p("This app uses the following R packages:"),
-                tags$p(
+
+                tags$dl(
+
                     tags$dt(tags$a(href = "https://shiny.rstudio.com/", "Shiny")),
                     tags$dd("Framework for app construction."),
-
-                    tags$br(),
 
                     tags$dt(tags$a(href = "https://deanattali.com/shinyjs/", "ShinyJS")),
                     tags$dd("Additional app functionality."),
 
-                    tags$br(),
-
                     tags$dt(tags$a(href = "https://www.tidyverse.org/", "The Tidyverse")),
                     tags$dd("Data manipulation functions, as well as reading and writing data."),
-
-                    tags$br(),
 
                     tags$dt(tags$a(href = "https://cran.r-project.org/package=seqinr", "seqinr")),
                     tags$dd("Writing output fasta files.")
                 )
             )
         )
-    ))
+    )
+)
 
 
 
@@ -502,7 +499,7 @@ server <- function(input, output, session) {
 
         # Download file for displayTable (annotations) to be shown with next
         # chunk via `renderUI()`.
-        output$resultTable <- downloadHandler(
+        output$resultTable_dl <- downloadHandler(
             filename = function() {
                 paste0(input$strainChoice, "_annotations.txt")
             },
@@ -513,12 +510,12 @@ server <- function(input, output, session) {
 
         # Rendering the download button once displayTable() is populated with
         # data (see above chunk).
-        output$resultTable_dl <- renderUI({
+        output$resultTable_btn <- renderUI({
             if(nrow(displayTable()) != 0) {
                 tagList(
                     tags$hr(),
                     downloadButton(
-                        "resultTable",
+                        "resultTable_dl",
                         "Download Annotations",
                         style = "color: #fff; background-color: #337ab7; border-color: #337ab7; width: 200px"
                     ),
@@ -534,7 +531,7 @@ server <- function(input, output, session) {
         # buttons to download them are rendered at the same time.
 
         # First the downloadHandler() for nucleotide sequences i.e. ntSeqs.
-        output$ntSeqs <- downloadHandler(
+        output$ntSeqs_dl <- downloadHandler(
             filename = function() {
                 paste0(input$strainChoice, "_nucleotideSequences.fasta")
             },
@@ -555,7 +552,7 @@ server <- function(input, output, session) {
 
 
         # The the `downloadHandler()` for amino acid sequences i.e. aaSeqs.
-        output$aaSeqs <- downloadHandler(
+        output$aaSeqs_dl <- downloadHandler(
             filename = function() {
                 paste0(input$strainChoice, "_proteinSequences.fasta")
             },
@@ -577,11 +574,11 @@ server <- function(input, output, session) {
 
         # Now render both sequence download buttons simultaneously, along with
         # some specific styling via `tagList()`.
-        output$seqs_dl <- renderUI({
+        output$seqs_btn <- renderUI({
             if (nrow(displayTable()) != 0) {
                 tagList(
                     downloadButton(
-                        "ntSeqs",
+                        "ntSeqs_dl",
                         "Nucleotide Sequences",
                         style = "width: 200px; background-color: #2c3e50; border-color: #2c3e50"
                     ),
@@ -594,7 +591,7 @@ server <- function(input, output, session) {
                     ),
 
                     downloadButton(
-                        "aaSeqs",
+                        "aaSeqs_dl",
                         "Protein Sequences",
                         style = "width: 200px; background-color: #2c3e50; border-color: #2c3e50"
                     )
