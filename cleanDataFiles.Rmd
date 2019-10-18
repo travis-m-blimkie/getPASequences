@@ -179,3 +179,13 @@ orthoData_4 <- list(
 )
 ```
 
+
+### Saving the ortholog files
+```{r}
+map2(
+  orthoData_4, 
+  names(orthoData_4),
+  ~saveRDS(.x, file = paste0("data/orthologs_", .y, ".rds"))
+)
+```
+

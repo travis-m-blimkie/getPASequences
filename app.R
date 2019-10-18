@@ -14,9 +14,31 @@ annosPA14 <- readRDS("data/annotations_UCBPP-PA14_109.rds")
 annosLESB58 <- readRDS("data/annotations_LESB58_125.rds")
 
 # Ortholog relations
-orthos_PAO1toPA14 <- readRDS("data/orthologs_pao1_pa14.rds")
-orthos_PAO1toLESB58 <- readRDS("data/orthologs_pao1_lesb58.rds")
-orthos_PA14toLESB58 <- readRDS("data/orthologs_pa14_lesb58.rds")
+orthologs_PAO1_PA14 <- readRDS("data/orthologs_PAO1_PA14.rds")
+orthologs_PAO1_LESB58 <- readRDS("data/orthologs_PAO1_LESB58.rds")
+orthologs_PA14_LESB58 <- readRDS("data/orthologs_PA14_LESB58.rds")
+
+
+# Define function for ortholog mapping ------------------------------------
+
+mapOrthosGenerally <- function(inputDF, strain1, strain2) {
+
+    if (strain1 %in% c("PAO1", "PA14") & strain2 %in% c("PAO1", "PA14")) {
+        mappedData <- inner_join(inputDF, orthologs_PAO1_PA14)
+    }
+
+    if (strain1 %in% c("PAO1", "LESB58") & strain2 %in% c("PAO1", "LESB58")) {
+        mappedData <- inner_join(inputDF, orthologs_PAO1_LESB58)
+    }
+
+    if (strain1 %in% c("PA14", "LESB58") & strain2 %in% c("PA14", "LESB58")) {
+        mappedData <- inner_join(inputDF, orthologs_PA14_LESB58)
+    }
+
+    return(mappedData)
+}
+
+
 
 
 # Define the UI elements --------------------------------------------------
@@ -25,18 +47,18 @@ ui <- fluidPage(
     theme = shinytheme("flatly"),
 
     navbarPage(
-        id = "navBarLayout",
-
         ####################################
         ## Settings for the NavBar layout ##
         ####################################
+
+        id = "navBarLayout",
 
         # Blank title, as we want the first tab to be our title. Maybe place an
         # image/logo here in the future...
         title = HTML(""),
 
         # Title that's shown in the browser window
-        windowTitle = "getPASequences",
+        windowTitle = "PATool",
 
         # Make the navbar collapsible
         collapsible = TRUE,
@@ -207,7 +229,7 @@ ui <- fluidPage(
                     div(style = "display: inline-block;vertical-align:top; width: 150px;",
                         selectInput(
                             inputId = "strain1",
-                            label = "First Strain:",
+                            label = "Mapping from:",
                             choices = c("PAO1" = "PAO1",
                                         "PA14" = "PA14",
                                         "LESB58" = "LESB58"),
@@ -226,7 +248,7 @@ ui <- fluidPage(
                     div(style = "display: inline-block;vertical-align:top; width: 150px;",
                         selectInput(
                             inputId = "strain2",
-                            label = "Second Strain:",
+                            label = "Mappping to:",
                             choices = c("PAO1" = "PAO1",
                                         "PA14" = "PA14",
                                         "LESB58" = "LESB58"),
@@ -244,13 +266,16 @@ ui <- fluidPage(
 
                     actionButton(
                         "orthoSearch",
-                        "Map",
+                        HTML("<b>Map</b>"),
                         style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px"
                     ),
                 ),
 
+                ### Main panel code
                 mainPanel(
-                    tags$h3("Results here:")
+                    tags$h3("Your results will be displayed below:"),
+                    tags$br(),
+                    DT::dataTableOutput("orthoResultPanel")
                 )
 
             )
@@ -316,6 +341,10 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
 
+    #################
+    ## Welcome Tab ##
+    #################
+
     # Switch to the anno tab panel via the button
     observeEvent(input$anno, {
         updateNavbarPage(session, inputId = "navBarLayout", selected = "annos")
@@ -332,12 +361,15 @@ server <- function(input, output, session) {
     }, ignoreInit = TRUE)
 
 
+    ####################
+    ## Annotation Tab ##
+    ####################
+
     # Extract the genes to be mapped, using a single regex to match locus tags
     # from any of the three supported strains.
     myGenes <- reactive({
         req(input$pastedInput)
-        str_extract_all(input$pastedInput, pattern = "PA(14|LES)?_?[0-9]{4,5}") %>%
-            str_trim()
+        str_extract_all(input$pastedInput, pattern = "PA(14|LES)?_?[0-9]{4,5}")
     })
 
 
@@ -570,6 +602,60 @@ server <- function(input, output, session) {
         })
 
     }) ### Closes the observation based on search button input
+
+
+    ##################
+    ## Ortholog Tab ##
+    ##################
+
+    # Extract and clean input genes
+    orthoInputGenes <- reactive({
+        req(input$orthoPastedInput)
+        str_extract_all(input$orthoPastedInput, pattern = "PA(14|LES)?_?[0-9]{4,5}") %>%
+            map(~str_trim(.))
+    })
+
+    # Starting the mapping stuff
+    observeEvent(input$orthoSearch, {
+
+        isolate(input$orthoSearch)
+
+        # Convert to a data frame, and fix column name for easy joining later.
+        orthoGenesTable <- reactive({
+            req(orthoInputGenes(), input$strain1)
+
+            part1 <- data.frame(Genes = orthoInputGenes(), stringsAsFactors = FALSE)
+            colnames(part1) <- paste0(input$strain1, "_Locus_Tag")
+
+            return(part1)
+        })
+
+        mappedOrthoGenes <- reactive({
+            req(orthoGenesTable())
+
+            part2 <- mapOrthosGenerally(orthoGenesTable(),
+                                        strain1 = input$strain1,
+                                        strain2 = input$strain2)
+            return(part2)
+        })
+
+        output$orthoResultPanel <- DT::renderDataTable({
+            isolate(mappedOrthoGenes())
+        }, options = list(searching = FALSE,
+                          scrollX = "100%",
+                          scrollY = "500px",
+                          scrollCollapse = TRUE,
+                          paging = FALSE,
+                          dom = "t"),
+        rownames = FALSE,
+        selection = "none")
+
+
+    }) # Closing the observeEvent for Map
+
+
+
+
 }
 
 
