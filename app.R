@@ -1,43 +1,15 @@
 
 # Load libraries and data -------------------------------------------------
 
-library(shiny)
-library(shinythemes)
-library(shinyjs)
-library(seqinr)
-library(DT)
-library(tidyverse)
+invisible(lapply(
+    c("shiny", "shinythemes", "shinyjs", "seqinr", "DT", "tidyverse"),
+    library,
+    character.only = TRUE
+))
 
-# Annotation files
-annosPAO1 <- readRDS("data/annotations_PAO1_107.rds")
-annosPA14 <- readRDS("data/annotations_UCBPP-PA14_109.rds")
-annosLESB58 <- readRDS("data/annotations_LESB58_125.rds")
-
-# Ortholog relations
-orthologs_PAO1_PA14 <- readRDS("data/orthologs_PAO1_PA14.rds")
-orthologs_PAO1_LESB58 <- readRDS("data/orthologs_PAO1_LESB58.rds")
-orthologs_PA14_LESB58 <- readRDS("data/orthologs_PA14_LESB58.rds")
-
-
-# Define function for ortholog mapping ------------------------------------
-
-mapOrthosGenerally <- function(inputDF, strain1, strain2) {
-
-    if (strain1 %in% c("PAO1", "PA14") & strain2 %in% c("PAO1", "PA14")) {
-        mappedData <- inner_join(inputDF, orthologs_PAO1_PA14)
-    } else if (strain1 %in% c("PAO1", "LESB58") & strain2 %in% c("PAO1", "LESB58")) {
-        mappedData <- inner_join(inputDF, orthologs_PAO1_LESB58)
-    } else if (strain1 %in% c("PA14", "LESB58") & strain2 %in% c("PA14", "LESB58")) {
-        mappedData <- inner_join(inputDF, orthologs_PA14_LESB58)
-    }
-
-    # mappedData <- mappedData %>%
-    #     select(matches("Locus_Tag|Name"))
-
-    return(mappedData)
-}
-
-
+# This file contains code to read data files and defines some functions used in
+# the app.
+source("global.R")
 
 
 # Define the UI elements --------------------------------------------------
@@ -390,6 +362,9 @@ server <- function(input, output, session) {
 
         # Map the input genes, dependent on strain. Notice we use `inner_join()`
         # here, which means genes with no hits must be handled separately.
+
+        # TODO Move this into `global.R` and have it sourced as a function.
+
         filteredTable <- reactive({
             req(myGenesTable(), input$strainChoice)
 
