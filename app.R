@@ -360,26 +360,13 @@ server <- function(input, output, session) {
         })
 
 
-        # Map the input genes, dependent on strain. Notice we use `inner_join()`
-        # here, which means genes with no hits must be handled separately.
-
-        # TODO Move this into `global.R` and have it sourced as a function.
-
+        # Map the input genes, dependent on strain. Notice this function uses
+        # `inner_join()`, which means genes with no hits must be handled
+        # separately.
         filteredTable <- reactive({
             req(myGenesTable(), input$strainChoice)
 
-            if (input$strainChoice == "PAO1") {
-                inner_join(myGenesTable(), annosPAO1, by = "Locus Tag")
-
-            } else if (input$strainChoice == "PA14") {
-                inner_join(myGenesTable(), annosPA14, by = "Locus Tag")
-
-            } else if (input$strainChoice == "LESB58") {
-                inner_join(myGenesTable(), annosLESB58,  by = "Locus Tag")
-
-            } else {
-                return(NULL)
-            }
+            retrieveAnnotations(myGenesTable(), strain = input$strainChoice)
         })
 
 
