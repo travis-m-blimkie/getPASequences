@@ -1,4 +1,7 @@
 
+# TODO Handle missing genes when mapping between orthologs
+
+
 # Load libraries and data -------------------------------------------------
 
 invisible(lapply(
@@ -24,8 +27,8 @@ ui <- fluidPage(
 
         id = "navBarLayout",
 
-        # Blank title, as we want the first tab to be our title. Maybe place an
-        # image/logo here in the future...
+        # Blank title, as we want the "Welcome" tab to be our title. Maybe place
+        # an image/logo here in the future...
         title = HTML(""),
 
         # Title that's shown in the browser window
@@ -64,10 +67,10 @@ ui <- fluidPage(
                         actionLink("linkAbout", "About"), "</b> page."
                     ))),
 
-                    tags$p(HTML(paste0(
+                    tags$p(HTML(
                         "We currently support the following strains of ",
                         "<em>P. aeruginosa</em>: PAO1, PA14, & LESB58."
-                    ))),
+                    )),
 
                     tags$p("To get started, select one of the options below:"),
 
@@ -139,9 +142,9 @@ ui <- fluidPage(
                     # this input state changing before running (sort of?).
                     actionButton(
                         inputId = "search",
-                        label = HTML("<b>Search</b>"),
+                        label = tags$b("Search"),
                         icon = icon("search"),
-                        style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c; width: 150px"
+                        style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px"
                     ),
 
 
@@ -237,7 +240,7 @@ ui <- fluidPage(
 
                     actionButton(
                         "orthoSearch",
-                        HTML("<b>Map</b>"),
+                        tags$b("Map"),
                         style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px"
                     ),
 
@@ -476,10 +479,15 @@ server <- function(input, output, session) {
             if(nrow(displayTable()) != 0) {
                 tagList(
                     tags$hr(),
+                    tags$p(
+                        "Download the annotation table as a tab delimited-file, ",
+                        "or the nucleotide or amino acid sequences in multi-",
+                        "fasta format."
+                    ),
                     downloadButton(
                         "resultTable_dl",
-                        "Download Annotations",
-                        style = "color: #fff; background-color: #337ab7; border-color: #337ab7; width: 200px"
+                        tags$b("Annotations"),
+                        style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c; width: 200px" # #337ab7
                     ),
                     tags$br(),
                     tags$br()
@@ -541,8 +549,8 @@ server <- function(input, output, session) {
                 tagList(
                     downloadButton(
                         "ntSeqs_dl",
-                        "Nucleotide Sequences",
-                        style = "width: 200px; background-color: #2c3e50; border-color: #2c3e50"
+                        tags$b("Nucleotide Sequences"),
+                        style = "width: 200px; background-color: #337ab7; border-color: #337ab7"
                     ),
 
                     # Divider so both sequence download buttons render on the
@@ -554,8 +562,8 @@ server <- function(input, output, session) {
 
                     downloadButton(
                         "aaSeqs_dl",
-                        "Protein Sequences",
-                        style = "width: 200px; background-color: #2c3e50; border-color: #2c3e50"
+                        tags$b("Protein Sequences"),
+                        style = "width: 200px; background-color: #337ab7; border-color: #337ab7"
                     )
                 )
             }
@@ -592,6 +600,7 @@ server <- function(input, output, session) {
 
         mappedOrthoGenes <- reactive({
             req(orthoGenesTable())
+            isolate(input$orthoSearch)
 
             mapOrthosGenerally(
                 orthoGenesTable(),
@@ -621,12 +630,15 @@ server <- function(input, output, session) {
             }
         )
         output$mappedOrtho_btn <- renderUI({
+            isolate(mappedOrthoGenes())
+
             if (nrow(mappedOrthoGenes()) != 0) {
                 tagList(
                     tags$hr(),
+                    tags$p("Download your orthologs as a tab-delimted file:"),
                     downloadButton(
                         "mappedOrtho_dl",
-                        HTML("<b>Download Orthologs</b>"),
+                        tags$b("Download Orthologs"),
                         style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c"
                     ),
                     tags$br()
