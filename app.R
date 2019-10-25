@@ -64,7 +64,7 @@ ui <- fluidPage(
                         "gene annotations, nucleotide or amino acid ",
                         "sequences, as well as map between strains. For more ",
                         "information, see the <b>",
-                        actionLink("linkAbout", "About"), "</b> page."
+                        actionLink("aboutTabLink", "About"), "</b> page."
                     ))),
 
                     tags$p(HTML(
@@ -78,7 +78,7 @@ ui <- fluidPage(
 
                     div(
                         actionButton(
-                            "anno",
+                            "annoTabBtn",
                             "Get Annotations & Sequences",
                             class = "btn btn-primary btn-lg",
                             style = "color: #2c3e50; background-color: #fff; border-color: #2c3e50;"
@@ -87,7 +87,7 @@ ui <- fluidPage(
                         HTML("&nbsp;&nbsp;&nbsp;"),
 
                         actionButton(
-                            "ortho",
+                            "orthoTabBtn",
                             "Perform Ortholog Mapping",
                             class = "btn btn-primary btn-lg",
                             style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50;"
@@ -101,7 +101,7 @@ ui <- fluidPage(
         ## Annotation and Sequence Tab ##
         #################################
         tabPanel(
-            value = "annos",
+            value = "annoTab",
             "Annotations and Sequences",
 
             sidebarLayout(
@@ -187,7 +187,7 @@ ui <- fluidPage(
         ## Ortholog Mapping Tab ##
         ##########################
         tabPanel(
-            value = "orthos",
+            value = "orthoTab",
             title = "Ortholog Mapping",
 
             sidebarLayout(
@@ -261,7 +261,7 @@ ui <- fluidPage(
         ## About Tab ##
         ###############
         tabPanel(
-            value = "about",
+            value = "aboutTab",
             "About",
 
             tags$div(
@@ -319,18 +319,18 @@ server <- function(input, output, session) {
     #################
 
     # Switch to the anno tab panel via the button
-    observeEvent(input$anno, {
-        updateNavbarPage(session, inputId = "navBarLayout", selected = "annos")
+    observeEvent(input$annoTabBtn, {
+        updateNavbarPage(session, inputId = "navBarLayout", selected = "annoTab")
     }, ignoreInit = TRUE)
 
     # Switch to the ortholog tab panel via the button
-    observeEvent(input$ortho, {
-        updateNavbarPage(session, inputId = "navBarLayout", selected = "orthos")
+    observeEvent(input$orthoTabBtn, {
+        updateNavbarPage(session, inputId = "navBarLayout", selected = "orthoTab")
     }, ignoreInit = TRUE)
 
     # Switch to the About panel via link in the intro text
-    observeEvent(input$linkAbout, {
-        updateNavbarPage(session, inputId = "navBarLayout", selected = "about")
+    observeEvent(input$aboutTabLink, {
+        updateNavbarPage(session, inputId = "navBarLayout", selected = "aboutTab")
     }, ignoreInit = TRUE)
 
 
