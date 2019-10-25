@@ -170,15 +170,15 @@ ui <- fluidPage(
                     # want to be explicit just in case.
                     h3("Your results will be displayed below:"),
                     tags$br(),
-                    DT::dataTableOutput(outputId = "displayTable"),
+                    DT::dataTableOutput(outputId = "annoDisplayTable"),
 
-                    uiOutput(outputId = "resultSummary"),
+                    uiOutput(outputId = "annoResultSummary"),
 
                     # Output for the non-matching genes. Using `uiOutput()` here
                     # so that it only displays if there are non-matching genes
                     # (i.e. the table which holds said genes has more than 0
                     # rows).
-                    uiOutput(outputId = "missingGenesPanel")
+                    uiOutput(outputId = "annoMissingGenesPanel")
                 )
             )
         ),
@@ -340,7 +340,7 @@ server <- function(input, output, session) {
 
     # Extract the genes to be mapped, using a single regex to match locus tags
     # from any of the three supported strains.
-    myGenes <- reactive({
+    annoInputGenes <- reactive({
         req(input$annoPastedInput)
         str_extract_all(input$annoPastedInput, pattern = "PA(14|LES)?_?[0-9]{4,5}") %>%
             map(~str_trim(.))
@@ -353,9 +353,9 @@ server <- function(input, output, session) {
 
 
         # Convert to a data frame, and fix column name for easy joining later.
-        myGenesTable <- reactive({
-            req(myGenes())
-            part1 <- data.frame(Genes = myGenes(), stringsAsFactors = FALSE)
+        annoInputGenesTable <- reactive({
+            req(annoInputGenes())
+            part1 <- data.frame(Genes = annoInputGenes(), stringsAsFactors = FALSE)
             colnames(part1) <- "Locus Tag"
             return(part1)
         })
@@ -364,41 +364,41 @@ server <- function(input, output, session) {
         # Map the input genes, dependent on strain. Notice this function uses
         # `inner_join()`, which means genes with no hits must be handled
         # separately.
-        filteredTable <- reactive({
-            req(myGenesTable(), input$annoStrainChoice)
-            retrieveAnnotations(myGenesTable(), strain = input$annoStrainChoice)
+        annoFilteredTable <- reactive({
+            req(annoInputGenesTable(), input$annoStrainChoice)
+            retrieveAnnotations(annoInputGenesTable(), strain = input$annoStrainChoice)
         })
 
 
         # Create table without sequence to facilitate display. This is also the
         # annotation table the user downloads with the "Download Annotations"
         # button.
-        displayTable <- reactive({
-            filteredTable() %>%
+        annoDisplayTable <- reactive({
+            annoFilteredTable() %>%
                 select(-c(`Nucleotide Sequence`, `Amino Acid Sequence`)) %>%
                 arrange(`Locus Tag`)
         })
 
         # Get numbers of genes to be included as a summary below the results table
-        numGenes <- reactive({
+        annoNumGenes <- reactive({
             list(
-                submitted = nrow(myGenesTable()),
-                matched = nrow(displayTable())
+                submitted = nrow(annoInputGenesTable()),
+                matched = nrow(annoDisplayTable())
             )
         })
 
 
         # Now we deal with any genes submitted that didn't have a match.
-        noMatchGenes <- reactive({
-            anti_join(myGenesTable(), filteredTable(), by = "Locus Tag")
+        annoNoMatchGenes <- reactive({
+            anti_join(annoInputGenesTable(), annoFilteredTable(), by = "Locus Tag")
         })
 
 
         # Create and render the table of results; prevent updating the results
         # table when input IDs are changed until the search button is pressed
         # again. As before, we are being explicit with our use of DT functions.
-        output$displayTable <- DT::renderDataTable({
-            isolate(displayTable())
+        output$annoDisplayTable <- DT::renderDataTable({
+            isolate(annoDisplayTable())
         }, options = list(searching = FALSE,
                           scrollX = "100%",
                           scrollY = "500px",
@@ -410,14 +410,14 @@ server <- function(input, output, session) {
         )
 
         # Print some text describing the number of matched/submitted genes.
-        output$resultSummary <- renderUI({
-            isolate(displayTable())
+        output$annoResultSummary <- renderUI({
+            isolate(annoDisplayTable())
 
             tagList(
                 tags$br(),
                 tags$p(paste0(
-                    "Matched ", numGenes()$matched, " out of ",
-                    numGenes()$submitted, " genes submitted."
+                    "Matched ", annoNumGenes()$matched, " out of ",
+                    annoNumGenes()$submitted, " genes submitted."
                 ))
             )
         })
@@ -426,8 +426,8 @@ server <- function(input, output, session) {
         # Create the output for non-matching genes, if present. This first chunk
         # creates the table which will be rendered conditionally in the next
         # block. As before, we are being explicit with our use of DT functions.
-        output$missingGenesTable <- DT::renderDataTable({
-            isolate(noMatchGenes())
+        output$annoMissingGenesTable <- DT::renderDataTable({
+            isolate(annoNoMatchGenes())
         }, options = list(searching = FALSE,
                           scrollX = "100%",
                           scrollY = "250px",
@@ -441,16 +441,16 @@ server <- function(input, output, session) {
         # This chunk renders the results only if there are non-matching genes
         # (see above chunk). As before, we are being explicit with our use of DT
         # functions beacuse of potential overlap with `shiny` functions.
-        output$missingGenesPanel <- renderUI({
-            isolate(noMatchGenes())
+        output$annoMissingGenesPanel <- renderUI({
+            isolate(annoNoMatchGenes())
 
-            if (nrow(noMatchGenes()) == 0) {
+            if (nrow(annoNoMatchGenes()) == 0) {
                 return(NULL)
             } else {
                 return(tagList(
                     tags$hr(),
                     tags$h3("The following submitted genes had no matches:"),
-                    DT::dataTableOutput("missingGenesTable"),
+                    DT::dataTableOutput("annoMissingGenesTable"),
                     tags$br(),
                     tags$br()
                 ))
@@ -460,19 +460,19 @@ server <- function(input, output, session) {
 
         # Download file for displayTable (annotations) to be shown with next
         # chunk via `renderUI()`.
-        output$resultTable_dl <- downloadHandler(
+        output$annoResultTable_dl <- downloadHandler(
             filename = function() {
                 paste0(input$annoStrainChoice, "_annotations.txt")
             },
             content = function(file) {
-                write_delim(displayTable(), file, delim = "\t")
+                write_delim(annoDisplayTable(), file, delim = "\t")
             }
         )
 
         # Rendering the download button once displayTable() is populated with
         # data (see above chunk).
         output$annoResultTableBtn <- renderUI({
-            if(nrow(displayTable()) != 0) {
+            if(nrow(annoDisplayTable()) != 0) {
                 tagList(
                     tags$hr(),
                     tags$p(
@@ -481,7 +481,7 @@ server <- function(input, output, session) {
                         "fasta format."
                     ),
                     downloadButton(
-                        "resultTable_dl",
+                        "annoResultTable_dl",
                         tags$b("Annotations"),
                         style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c; width: 200px" # #337ab7
                     ),
@@ -497,19 +497,19 @@ server <- function(input, output, session) {
         # buttons to download them are rendered at the same time.
 
         # First the downloadHandler() for nucleotide sequences i.e. ntSeqs.
-        output$ntSeqs_dl <- downloadHandler(
+        output$annoNTSeqs_dl <- downloadHandler(
             filename = function() {
                 paste0(input$annoStrainChoice, "_nucleotideSequences.fasta")
             },
             content = function(file) {
                 write.fasta(
-                    as.list(filteredTable()$Nucleotide_Sequence),
+                    as.list(annoFilteredTable()$`Nucleotide Sequence`),
                     names = paste0(
-                        filteredTable()$`Locus Tag`,
+                        annoFilteredTable()$`Locus Tag`,
                         " | ",
-                        filteredTable()$`Name`,
+                        annoFilteredTable()$`Name`,
                         "; ",
-                        filteredTable()$`Description`
+                        annoFilteredTable()$`Description`
                     ),
                     file.out = file
                 )
@@ -518,19 +518,19 @@ server <- function(input, output, session) {
 
 
         # The the `downloadHandler()` for amino acid sequences i.e. aaSeqs.
-        output$aaSeqs_dl <- downloadHandler(
+        output$annoAASeqs_dl <- downloadHandler(
             filename = function() {
                 paste0(input$annoStrainChoice, "_proteinSequences.fasta")
             },
             content = function(file) {
                 write.fasta(
-                    as.list(filteredTable()$Amino_Acid_Sequence),
+                    as.list(annoFilteredTable()$`Amino Acid Sequence`),
                     names = paste0(
-                        filteredTable()$`Locus Tag`,
+                        annoFilteredTable()$`Locus Tag`,
                         " | ",
-                        filteredTable()$Name,
+                        annoFilteredTable()$Name,
                         "; ",
-                        filteredTable()$Description
+                        annoFilteredTable()$Description
                     ),
                     file.out = file
                 )
@@ -541,10 +541,10 @@ server <- function(input, output, session) {
         # Now render both sequence download buttons simultaneously, along with
         # some specific styling via `tagList()`.
         output$annoSeqsBtn <- renderUI({
-            if (nrow(displayTable()) != 0) {
+            if (nrow(annoDisplayTable()) != 0) {
                 tagList(
                     downloadButton(
-                        "ntSeqs_dl",
+                        "annoNTSeqs_dl",
                         tags$b("Nucleotide Sequences"),
                         style = "width: 200px; background-color: #337ab7; border-color: #337ab7"
                     ),
@@ -557,7 +557,7 @@ server <- function(input, output, session) {
                     ),
 
                     downloadButton(
-                        "aaSeqs_dl",
+                        "annoAASeqs_dl",
                         tags$b("Protein Sequences"),
                         style = "width: 200px; background-color: #337ab7; border-color: #337ab7"
                     )
