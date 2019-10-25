@@ -141,7 +141,7 @@ ui <- fluidPage(
                     # Button which triggers results to display. Most code depends on
                     # this input state changing before running (sort of?).
                     actionButton(
-                        inputId = "search",
+                        inputId = "annoSearch",
                         label = tags$b("Search"),
                         icon = icon("search"),
                         style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px"
@@ -150,12 +150,12 @@ ui <- fluidPage(
 
                     # Download button for annotation table, to be created with
                     # `renderUI()`.
-                    uiOutput("resultTable_btn"),
+                    uiOutput("annoResultTableBtn"),
 
 
                     # Download button for nucleotide and amino acid sequences, hidden
                     # until data is available.
-                    uiOutput("seqs_btn"),
+                    uiOutput("annoSeqsBtn"),
 
                     tags$hr()
                 ),
@@ -349,16 +349,14 @@ server <- function(input, output, session) {
 
     ### Delay all code until the search button is pressed. End of this is noted
     ### with a comment. Might need to change this...
-    observeEvent(input$search, {
+    observeEvent(input$annoSearch, {
 
 
         # Convert to a data frame, and fix column name for easy joining later.
         myGenesTable <- reactive({
             req(myGenes())
-
             part1 <- data.frame(Genes = myGenes(), stringsAsFactors = FALSE)
             colnames(part1) <- "Locus Tag"
-
             return(part1)
         })
 
@@ -368,7 +366,6 @@ server <- function(input, output, session) {
         # separately.
         filteredTable <- reactive({
             req(myGenesTable(), input$annoStrainChoice)
-
             retrieveAnnotations(myGenesTable(), strain = input$annoStrainChoice)
         })
 
@@ -474,7 +471,7 @@ server <- function(input, output, session) {
 
         # Rendering the download button once displayTable() is populated with
         # data (see above chunk).
-        output$resultTable_btn <- renderUI({
+        output$annoResultTableBtn <- renderUI({
             if(nrow(displayTable()) != 0) {
                 tagList(
                     tags$hr(),
@@ -543,7 +540,7 @@ server <- function(input, output, session) {
 
         # Now render both sequence download buttons simultaneously, along with
         # some specific styling via `tagList()`.
-        output$seqs_btn <- renderUI({
+        output$annoSeqsBtn <- renderUI({
             if (nrow(displayTable()) != 0) {
                 tagList(
                     downloadButton(
