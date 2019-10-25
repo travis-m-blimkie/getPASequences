@@ -120,7 +120,7 @@ ui <- fluidPage(
 
                     # Dropdown to pick strain
                     selectInput(
-                        inputId = "strainChoice",
+                        inputId = "annoStrainChoice",
                         label = "Please select your strain:",
                         choices = c("PAO1" = "PAO1",
                                     "PA14" = "PA14",
@@ -367,9 +367,9 @@ server <- function(input, output, session) {
         # `inner_join()`, which means genes with no hits must be handled
         # separately.
         filteredTable <- reactive({
-            req(myGenesTable(), input$strainChoice)
+            req(myGenesTable(), input$annoStrainChoice)
 
-            retrieveAnnotations(myGenesTable(), strain = input$strainChoice)
+            retrieveAnnotations(myGenesTable(), strain = input$annoStrainChoice)
         })
 
 
@@ -418,7 +418,6 @@ server <- function(input, output, session) {
 
             tagList(
                 tags$br(),
-
                 tags$p(paste0(
                     "Matched ", numGenes()$matched, " out of ",
                     numGenes()$submitted, " genes submitted."
@@ -466,7 +465,7 @@ server <- function(input, output, session) {
         # chunk via `renderUI()`.
         output$resultTable_dl <- downloadHandler(
             filename = function() {
-                paste0(input$strainChoice, "_annotations.txt")
+                paste0(input$annoStrainChoice, "_annotations.txt")
             },
             content = function(file) {
                 write_delim(displayTable(), file, delim = "\t")
@@ -503,7 +502,7 @@ server <- function(input, output, session) {
         # First the downloadHandler() for nucleotide sequences i.e. ntSeqs.
         output$ntSeqs_dl <- downloadHandler(
             filename = function() {
-                paste0(input$strainChoice, "_nucleotideSequences.fasta")
+                paste0(input$annoStrainChoice, "_nucleotideSequences.fasta")
             },
             content = function(file) {
                 write.fasta(
@@ -524,7 +523,7 @@ server <- function(input, output, session) {
         # The the `downloadHandler()` for amino acid sequences i.e. aaSeqs.
         output$aaSeqs_dl <- downloadHandler(
             filename = function() {
-                paste0(input$strainChoice, "_proteinSequences.fasta")
+                paste0(input$annoStrainChoice, "_proteinSequences.fasta")
             },
             content = function(file) {
                 write.fasta(
