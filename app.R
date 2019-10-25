@@ -625,6 +625,8 @@ server <- function(input, output, session) {
                 write_delim(mappedOrthoGenes(), file, delim = "\t")
             }
         )
+
+        # Render the download button when there's something to save
         output$mappedOrtho_btn <- renderUI({
             isolate(mappedOrthoGenes())
 
