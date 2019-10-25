@@ -131,7 +131,7 @@ ui <- fluidPage(
 
                     # Place to paste your genes of interest
                     textAreaInput(
-                        inputId = "pastedInput",
+                        inputId = "annoPastedInput",
                         label = "Paste your list of locus tags, one per line:",
                         placeholder = "Your genes here...",
                         height = "300px"
@@ -341,8 +341,8 @@ server <- function(input, output, session) {
     # Extract the genes to be mapped, using a single regex to match locus tags
     # from any of the three supported strains.
     myGenes <- reactive({
-        req(input$pastedInput)
-        str_extract_all(input$pastedInput, pattern = "PA(14|LES)?_?[0-9]{4,5}") %>%
+        req(input$annoPastedInput)
+        str_extract_all(input$annoPastedInput, pattern = "PA(14|LES)?_?[0-9]{4,5}") %>%
             map(~str_trim(.))
     })
 
