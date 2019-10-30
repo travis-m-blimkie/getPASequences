@@ -109,12 +109,12 @@ ui <- fluidPage(
                 ### SIDEBAR PANEL ###
                 sidebarPanel(
 
-                    tags$p(div(HTML(
+                    tags$p(HTML(
                         "<b>NOTE:</b> Non-matching IDs are returned in a ",
                         "separate table. IDs must still be in the proper ",
                         "format (e.g. PA0000 for strain PAO1) to be recognized ",
                         "and parsed correctly."
-                    ))),
+                    )),
 
                     tags$br(),
 
@@ -241,6 +241,7 @@ ui <- fluidPage(
                     actionButton(
                         "orthoSearch",
                         tags$b("Map"),
+                        icon = icon("search"),
                         style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px"
                     ),
 
@@ -251,7 +252,10 @@ ui <- fluidPage(
                 mainPanel(
                     tags$h3("Your results will be displayed below:"),
                     tags$br(),
-                    DT::dataTableOutput("orthoResultPanel")
+                    DT::dataTableOutput("orthoResultPanel"),
+
+                    # Show missing genes if present
+                    uiOutput(outputId = "orthoMissingGenesPanel")
                 )
 
             )
@@ -496,7 +500,8 @@ server <- function(input, output, session) {
         # Tables for nt and aa sequences are created independently, but the
         # buttons to download them are rendered at the same time.
 
-        # First the downloadHandler() for nucleotide sequences i.e. ntSeqs.
+        # First the `downloadHandler()` for nucleotide sequences i.e.
+        # annoNTSeqs_dl.
         output$annoNTSeqs_dl <- downloadHandler(
             filename = function() {
                 paste0(input$annoStrainChoice, "_nucleotideSequences.fasta")
@@ -517,7 +522,8 @@ server <- function(input, output, session) {
         )
 
 
-        # The the `downloadHandler()` for amino acid sequences i.e. aaSeqs.
+        # The the `downloadHandler()` for amino acid sequences i.e.
+        # annoAASeqs_dl
         output$annoAASeqs_dl <- downloadHandler(
             filename = function() {
                 paste0(input$annoStrainChoice, "_proteinSequences.fasta")
@@ -586,7 +592,7 @@ server <- function(input, output, session) {
 
         # Convert to a data frame, and fix column name for easy joining later.
         orthoGenesTable <- reactive({
-            req(orthoInputGenes(), input$strain1)
+            req(orthoInputGenes(), input$strain1, input$strain2)
 
             part1 <- data.frame(Genes = orthoInputGenes(), stringsAsFactors = FALSE)
             colnames(part1) <- paste0(input$strain1, " Locus Tag")
@@ -603,6 +609,39 @@ server <- function(input, output, session) {
                 strain1 = input$strain1,
                 strain2 = input$strain2
             )
+        })
+
+        missingOrthoGenes <- reactive({
+            req(orthoGenesTable(), input$strain1, input$strain2)
+
+            anti_join(orthoGenesTable(), mappedOrthoGenes())
+        })
+
+        output$orthoMissingGenesTable <- DT::renderDataTable({
+            isolate(missingOrthoGenes())
+        }, options = list(searching = FALSE,
+                          scrollX = "100%",
+                          scrollY = "500px",
+                          scrollCollapse = TRUE,
+                          paging = FALSE,
+                          dom = "t"),
+        rownames = FALSE,
+        selection = "none")
+
+        output$orthoMissingGenesPanel <- renderUI({
+            isolate(missingOrthoGenes())
+
+            if (nrow(missingOrthoGenes()) == 0) {
+                return(NULL)
+            } else {
+                return(tagList(
+                    tags$hr(),
+                    tags$h3("The following submitted genes had no orthologs:"),
+                    DT::dataTableOutput("orthoMissingGenesTable"),
+                    tags$br(),
+                    tags$br()
+                ))
+            }
         })
 
         output$orthoResultPanel <- DT::renderDataTable({
