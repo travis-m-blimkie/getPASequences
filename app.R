@@ -7,8 +7,8 @@ invisible(lapply(
     character.only = TRUE
 ))
 
-# This file contains code to read data files and defines some functions used in
-# the app.
+# This file contains code to read data files and defines the annotation and
+# ortholog mapping functions used in the app.
 source("global.R")
 
 
@@ -118,7 +118,7 @@ ui <- fluidPage(
                     # Dropdown to pick strain
                     selectInput(
                         inputId = "annoStrainChoice",
-                        label = "Please select your strain:",
+                        label = "Please select a strain:",
                         choices = c("PAO1" = "PAO1",
                                     "PA14" = "PA14",
                                     "LESB58" = "LESB58"),
@@ -167,7 +167,7 @@ ui <- fluidPage(
                     # want to be explicit just in case.
                     h3("Your results will be displayed below:"),
                     tags$br(),
-                    DT::dataTableOutput(outputId = "annoDisplayTable"),
+                    DT::dataTableOutput("annoDisplayTable"),
 
                     uiOutput(outputId = "annoResultSummary"),
 
@@ -175,7 +175,7 @@ ui <- fluidPage(
                     # so that it only displays if there are non-matching genes
                     # (i.e. the table which holds said genes has more than 0
                     # rows).
-                    uiOutput(outputId = "annoMissingGenesPanel")
+                    uiOutput("annoMissingGenesPanel")
                 )
             )
         ),
@@ -255,7 +255,7 @@ ui <- fluidPage(
                     uiOutput("orthoResultSummary"),
 
                     # Show missing genes if present
-                    uiOutput(outputId = "orthoMissingGenesPanel")
+                    uiOutput("orthoMissingGenesPanel")
                 )
             )
         ),
@@ -292,7 +292,6 @@ ui <- fluidPage(
                 tags$p("This app uses the following R packages:"),
 
                 tags$dl(
-
                     tags$dt(tags$a(href = "https://shiny.rstudio.com/", "Shiny")),
                     tags$dd("Framework for app construction."),
 
