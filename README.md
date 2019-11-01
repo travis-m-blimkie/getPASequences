@@ -21,4 +21,4 @@ Available with the MIT license.
 
 ***
 
-![](www/getPASequences_screenshot.png)
+![](www/screenshot.svg)

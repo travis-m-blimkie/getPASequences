@@ -257,7 +257,6 @@ ui <- fluidPage(
                     # Show missing genes if present
                     uiOutput(outputId = "orthoMissingGenesPanel")
                 )
-
             )
         ),
 
