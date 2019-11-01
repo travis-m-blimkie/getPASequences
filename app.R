@@ -1,7 +1,4 @@
 
-# TODO Handle missing genes when mapping between orthologs
-
-
 # Load libraries and data -------------------------------------------------
 
 invisible(lapply(
@@ -253,6 +250,9 @@ ui <- fluidPage(
                     tags$h3("Your results will be displayed below:"),
                     tags$br(),
                     DT::dataTableOutput("orthoResultPanel"),
+
+                    # Summary of number of mapped genes
+                    uiOutput("orthoResultSummary"),
 
                     # Show missing genes if present
                     uiOutput(outputId = "orthoMissingGenesPanel")
@@ -611,10 +611,42 @@ server <- function(input, output, session) {
             )
         })
 
+        # Handle genes without orthologs
         missingOrthoGenes <- reactive({
             req(orthoGenesTable(), input$strain1, input$strain2)
 
             anti_join(orthoGenesTable(), mappedOrthoGenes())
+        })
+
+        # Summarize mapped genes
+        orthoNumGenes <- reactive({
+            list(
+                submitted = nrow(orthoGenesTable()),
+                matched = nrow(mappedOrthoGenes())
+            )
+        })
+
+        output$orthoResultPanel <- DT::renderDataTable({
+            isolate(mappedOrthoGenes())
+        }, options = list(searching = FALSE,
+                          scrollX = "100%",
+                          scrollY = "500px",
+                          scrollCollapse = TRUE,
+                          paging = FALSE,
+                          dom = "t"),
+        rownames = FALSE,
+        selection = "none")
+
+        output$orthoResultSummary <- renderUI({
+            isolate(mappedOrthoGenes())
+
+            tagList(
+                tags$br(),
+                tags$p(paste0(
+                    "Matched ", orthoNumGenes()$matched, " out of ",
+                    orthoNumGenes()$submitted, " genes submitted."
+                ))
+            )
         })
 
         output$orthoMissingGenesTable <- DT::renderDataTable({
@@ -643,17 +675,6 @@ server <- function(input, output, session) {
                 ))
             }
         })
-
-        output$orthoResultPanel <- DT::renderDataTable({
-            isolate(mappedOrthoGenes())
-        }, options = list(searching = FALSE,
-                          scrollX = "100%",
-                          scrollY = "500px",
-                          scrollCollapse = TRUE,
-                          paging = FALSE,
-                          dom = "t"),
-        rownames = FALSE,
-        selection = "none")
 
         # Download button for mapped orthologs
         output$mappedOrtho_dl <- downloadHandler(
