@@ -1,4 +1,4 @@
-# getPASequences
+# PATool
 
 ### Available [here!](https://travis-m-blimkie.shinyapps.io/getPASequences/)  
 
