@@ -1,11 +1,12 @@
 
 # Load libraries and data -------------------------------------------------
 
-invisible(lapply(
-    c("shiny", "shinythemes", "shinyjs", "seqinr", "DT", "tidyverse"),
-    library,
-    character.only = TRUE
-))
+library(shiny)
+library(shinythemes)
+library(shinyjs)
+library(seqinr)
+library(DT)
+library(tidyverse)
 
 # This file contains code to read data files and defines the annotation and
 # ortholog mapping functions used in the app.
