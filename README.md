@@ -1,6 +1,6 @@
 # PATool
 
-### Available [here!](https://travis-m-blimkie.shinyapps.io/getPASequences/)  
+### Available [here!](https://travis-m-blimkie.shinyapps.io/PATool/)  
 
 
 This Shiny app was built to retrieve annotations and nucleotide/amino acid
