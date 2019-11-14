@@ -2,14 +2,10 @@
 # Load libraries and data -------------------------------------------------
 
 library(shiny)
-library(shinythemes)
-library(shinyjs)
-library(seqinr)
-library(DT)
-library(tidyverse)
 
 # This file contains code to read data files and defines the annotation and
-# ortholog mapping functions used in the app.
+# ortholog mapping functions used in the app. It also loads a bunch of
+# libraries.
 source("global.R")
 
 
