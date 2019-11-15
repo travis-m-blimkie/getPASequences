@@ -39,10 +39,7 @@ ui <- fluidPage(
         #################
         tabPanel(
             value = "main",
-
-            # TODO Come up with a better title/name!
-            div(HTML("PATool")),
-
+            title = div(HTML("Home")),
             tags$div(
                 class = "jumbotron",
                 h1("Welcome"),
@@ -116,9 +113,7 @@ ui <- fluidPage(
                     selectInput(
                         inputId = "annoStrainChoice",
                         label = "Please select a strain:",
-                        choices = c("PAO1" = "PAO1",
-                                    "PA14" = "PA14",
-                                    "LESB58" = "LESB58"),
+                        choices = c(PAO1 = "PAO1", PA14 = "PA14", LESB58 = "LESB58"),
                         width = "50%"
                     ),
 
@@ -198,9 +193,7 @@ ui <- fluidPage(
                         selectInput(
                             inputId = "strain1",
                             label = "Mapping from:",
-                            choices = c("PAO1" = "PAO1",
-                                        "PA14" = "PA14",
-                                        "LESB58" = "LESB58"),
+                            choices = c(PAO1 = "PAO1", PA14 = "PA14", LESB58 = "LESB58"),
                             selected = "PAO1"
                         )
                     ),
@@ -217,9 +210,7 @@ ui <- fluidPage(
                         selectInput(
                             inputId = "strain2",
                             label = "Mappping to:",
-                            choices = c("PAO1" = "PAO1",
-                                        "PA14" = "PA14",
-                                        "LESB58" = "LESB58"),
+                            choices = c(PAO1 = "PAO1", PA14 = "PA14", LESB58 = "LESB58"),
                             selected = "PA14"
                         )
                     ),
