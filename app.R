@@ -5,20 +5,32 @@ library(shiny)
 
 # This file contains code to read data files and defines the annotation and
 # ortholog mapping functions used in the app. It also loads a bunch of
-# libraries.
+# libraries, to keep this clean.
 source("global.R")
 
 
 # Define the UI elements --------------------------------------------------
 
+# Useful colours which match the flatly theme:
+# Dark blue   #2c3e50
+# Turquoise   #18bc9c
+# Light blue  #3498db
+# DT blue     #0075b0
+# White       #fff
+
+
 ui <- fluidPage(
     theme = shinytheme("flatly"),
+
+    # Head linking to custom CSS tweaks
+    tags$head(
+        tags$link(rel = "stylesheet", type = "text/css", href = "css/user.css")
+    ),
 
     navbarPage(
         ####################################
         ## Settings for the NavBar layout ##
         ####################################
-
         id = "navBarLayout",
 
         # Blank title, as we want the "Welcome" tab to be our title. Maybe place
@@ -72,7 +84,7 @@ ui <- fluidPage(
                             "annoTabBtn",
                             "Get Annotations & Sequences",
                             class = "btn btn-primary btn-lg",
-                            style = "color: #2c3e50; background-color: #fff; border-color: #2c3e50;"
+                            style = "color: #fff; background-color: #3498db; border-color: #3498db;"
                         ),
 
                         HTML("&nbsp;&nbsp;&nbsp;"),
@@ -253,10 +265,14 @@ ui <- fluidPage(
         ###############
         tabPanel(
             value = "aboutTab",
-            "About",
+            title = "About",
 
             tags$div(
                 class = "jumbotron",
+
+                tags$h1("About"),
+
+                tags$hr(),
 
                 tags$p("Source code for this app is available at the ",
                        tags$a(href = "https://github.com/travis-m-blimkie/getPASequences", "Github page"),
@@ -275,7 +291,7 @@ ui <- fluidPage(
                     ", version 1.0."
                 ),
 
-                tags$hr(),
+                tags$br(),
 
                 tags$p("This app uses the following R packages:"),
 
