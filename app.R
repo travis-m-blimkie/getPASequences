@@ -60,6 +60,8 @@ ui <- fluidPage(
 
                 tags$div(
 
+                    # Note that we only need `paste0()` here because of the link
+                    # to the about page within the body of the text.
                     tags$p(HTML(paste0(
                         "Welcome to PATool, a Shiny app designed to facilitate ",
                         "analyses with <em>Pseudomonas aeruginosa</em>. Here ",
@@ -77,9 +79,9 @@ ui <- fluidPage(
 
                     tags$p("To get started, select one of the options below:"),
 
-                    br(),
+                    tags$br(),
 
-                    div(
+                    tags$div(
                         actionButton(
                             "annoTabBtn",
                             "Get Annotations & Sequences",
@@ -201,7 +203,7 @@ ui <- fluidPage(
 
 
                     # Choose strain 1
-                    div(style = "display: inline-block;vertical-align:top; width: 150px;",
+                    tags$div(style = "display: inline-block;vertical-align:top; width: 150px;",
                         selectInput(
                             inputId = "strain1",
                             label = "Mapping from:",
@@ -211,14 +213,14 @@ ui <- fluidPage(
                     ),
 
                     # Separator since we have both dropdowns on one "line"
-                    div(
+                    tags$div(
                         style = "display: inline-block;vertical-align:top; width: 100px;",
                         HTML("<br>")
                     ),
 
 
                     # Choose strain 2
-                    div(style = "display: inline-block;vertical-align:top; width: 150px;",
+                    tags$div(style = "display: inline-block;vertical-align:top; width: 150px;",
                         selectInput(
                             inputId = "strain2",
                             label = "Mappping to:",
@@ -296,15 +298,19 @@ ui <- fluidPage(
                 tags$p("This app uses the following R packages:"),
 
                 tags$dl(
+                    # Shiny
                     tags$dt(tags$a(href = "https://shiny.rstudio.com/", "Shiny")),
                     tags$dd("Framework for app construction."),
 
+                    # ShinyJS
                     tags$dt(tags$a(href = "https://deanattali.com/shinyjs/", "ShinyJS")),
                     tags$dd("Additional app functionality."),
 
-                    tags$dt(tags$a(href = "https://www.tidyverse.org/", "The Tidyverse")),
+                    # tidyverse
+                    tags$dt(tags$a(href = "https://www.tidyverse.org/", "The tidyverse")),
                     tags$dd("Data manipulation functions, as well as reading and writing data."),
 
+                    # seqinr
                     tags$dt(tags$a(href = "https://cran.r-project.org/package=seqinr", "seqinr")),
                     tags$dd("Writing output fasta files.")
                 )
@@ -559,7 +565,7 @@ server <- function(input, output, session) {
 
                     # Divider so both sequence download buttons render on the
                     # same line, with a small separation between them.
-                    div(
+                    tags$div(
                         style = "display: inline-block; vertical-align: top; width: 10px;",
                         HTML("<br>")
                     ),
