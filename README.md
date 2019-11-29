@@ -1,3 +1,5 @@
+<img src="www/hexSticker.svg" align="right" width="100" height="100"/> 
+
 # PATool
 
 ### Available [here!](https://travis-m-blimkie.shinyapps.io/PATool/)  

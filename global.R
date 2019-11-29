@@ -1,4 +1,13 @@
 
+# Load all required libraries ---------------------------------------------
+
+library(shinythemes)
+library(shinyjs)
+library(seqinr)
+library(DT)
+library(tidyverse)
+
+
 # Load all the data files -------------------------------------------------
 
 # Annotation files

@@ -2,27 +2,35 @@
 # Load libraries and data -------------------------------------------------
 
 library(shiny)
-library(shinythemes)
-library(shinyjs)
-library(seqinr)
-library(DT)
-library(tidyverse)
 
 # This file contains code to read data files and defines the annotation and
-# ortholog mapping functions used in the app.
+# ortholog mapping functions used in the app. It also loads a bunch of
+# libraries, to keep this clean.
 source("global.R")
 
 
 # Define the UI elements --------------------------------------------------
 
+# Useful colours which match the flatly theme:
+# Dark blue   #2c3e50
+# Turquoise   #18bc9c
+# Light blue  #3498db
+# DT blue     #0075b0
+# White       #fff
+
+
 ui <- fluidPage(
     theme = shinytheme("flatly"),
+
+    # Head linking to custom CSS tweaks
+    tags$head(
+        tags$link(rel = "stylesheet", type = "text/css", href = "css/user.css")
+    ),
 
     navbarPage(
         ####################################
         ## Settings for the NavBar layout ##
         ####################################
-
         id = "navBarLayout",
 
         # Blank title, as we want the "Welcome" tab to be our title. Maybe place
@@ -43,10 +51,7 @@ ui <- fluidPage(
         #################
         tabPanel(
             value = "main",
-
-            # TODO Come up with a better title/name!
-            div(HTML("PATool")),
-
+            title = div(HTML("Home")),
             tags$div(
                 class = "jumbotron",
                 h1("Welcome"),
@@ -55,6 +60,8 @@ ui <- fluidPage(
 
                 tags$div(
 
+                    # Note that we only need `paste0()` here because of the link
+                    # to the about page within the body of the text.
                     tags$p(HTML(paste0(
                         "Welcome to PATool, a Shiny app designed to facilitate ",
                         "analyses with <em>Pseudomonas aeruginosa</em>. Here ",
@@ -72,14 +79,14 @@ ui <- fluidPage(
 
                     tags$p("To get started, select one of the options below:"),
 
-                    br(),
+                    tags$br(),
 
-                    div(
+                    tags$div(
                         actionButton(
                             "annoTabBtn",
                             "Get Annotations & Sequences",
                             class = "btn btn-primary btn-lg",
-                            style = "color: #2c3e50; background-color: #fff; border-color: #2c3e50;"
+                            style = "color: #fff; background-color: #3498db; border-color: #3498db;"
                         ),
 
                         HTML("&nbsp;&nbsp;&nbsp;"),
@@ -120,9 +127,7 @@ ui <- fluidPage(
                     selectInput(
                         inputId = "annoStrainChoice",
                         label = "Please select a strain:",
-                        choices = c("PAO1" = "PAO1",
-                                    "PA14" = "PA14",
-                                    "LESB58" = "LESB58"),
+                        choices = c(PAO1 = "PAO1", PA14 = "PA14", LESB58 = "LESB58"),
                         width = "50%"
                     ),
 
@@ -198,32 +203,28 @@ ui <- fluidPage(
 
 
                     # Choose strain 1
-                    div(style = "display: inline-block;vertical-align:top; width: 150px;",
+                    tags$div(style = "display: inline-block;vertical-align:top; width: 150px;",
                         selectInput(
                             inputId = "strain1",
                             label = "Mapping from:",
-                            choices = c("PAO1" = "PAO1",
-                                        "PA14" = "PA14",
-                                        "LESB58" = "LESB58"),
+                            choices = c(PAO1 = "PAO1", PA14 = "PA14", LESB58 = "LESB58"),
                             selected = "PAO1"
                         )
                     ),
 
                     # Separator since we have both dropdowns on one "line"
-                    div(
+                    tags$div(
                         style = "display: inline-block;vertical-align:top; width: 100px;",
                         HTML("<br>")
                     ),
 
 
                     # Choose strain 2
-                    div(style = "display: inline-block;vertical-align:top; width: 150px;",
+                    tags$div(style = "display: inline-block;vertical-align:top; width: 150px;",
                         selectInput(
                             inputId = "strain2",
                             label = "Mappping to:",
-                            choices = c("PAO1" = "PAO1",
-                                        "PA14" = "PA14",
-                                        "LESB58" = "LESB58"),
+                            choices = c(PAO1 = "PAO1", PA14 = "PA14", LESB58 = "LESB58"),
                             selected = "PA14"
                         )
                     ),
@@ -266,10 +267,14 @@ ui <- fluidPage(
         ###############
         tabPanel(
             value = "aboutTab",
-            "About",
+            title = "About",
 
             tags$div(
                 class = "jumbotron",
+
+                tags$h1("About"),
+
+                tags$hr(),
 
                 tags$p("Source code for this app is available at the ",
                        tags$a(href = "https://github.com/travis-m-blimkie/getPASequences", "Github page"),
@@ -288,20 +293,24 @@ ui <- fluidPage(
                     ", version 1.0."
                 ),
 
-                tags$hr(),
+                tags$br(),
 
                 tags$p("This app uses the following R packages:"),
 
                 tags$dl(
+                    # Shiny
                     tags$dt(tags$a(href = "https://shiny.rstudio.com/", "Shiny")),
                     tags$dd("Framework for app construction."),
 
+                    # ShinyJS
                     tags$dt(tags$a(href = "https://deanattali.com/shinyjs/", "ShinyJS")),
                     tags$dd("Additional app functionality."),
 
-                    tags$dt(tags$a(href = "https://www.tidyverse.org/", "The Tidyverse")),
+                    # tidyverse
+                    tags$dt(tags$a(href = "https://www.tidyverse.org/", "The tidyverse")),
                     tags$dd("Data manipulation functions, as well as reading and writing data."),
 
+                    # seqinr
                     tags$dt(tags$a(href = "https://cran.r-project.org/package=seqinr", "seqinr")),
                     tags$dd("Writing output fasta files.")
                 )
@@ -556,7 +565,7 @@ server <- function(input, output, session) {
 
                     # Divider so both sequence download buttons render on the
                     # same line, with a small separation between them.
-                    div(
+                    tags$div(
                         style = "display: inline-block; vertical-align: top; width: 10px;",
                         HTML("<br>")
                     ),

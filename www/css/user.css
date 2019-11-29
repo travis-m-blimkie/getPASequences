@@ -1,0 +1,12 @@
+/* Make non-bulleted lists able to be indented, specifically for About page */
+dl dd {
+  margin-left: 1em;
+}
+
+/* Custom class to add border to sidebarPanels */
+/*
+.col-sm-4 {
+  border: 1px solid #98aeb3;
+}
+*/
+
