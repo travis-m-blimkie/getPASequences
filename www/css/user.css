@@ -8,3 +8,8 @@ dl dd {
   position: relative;
   border: 1px solid #98aeb3;
 }
+
+/* Special class for providing help to the user */
+.conditional-help {
+  margin-bottom: 10px;
+}

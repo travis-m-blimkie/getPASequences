@@ -20,6 +20,9 @@ orthologs_PAO1_PA14 <- readRDS("data/orthologs_PAO1_PA14.rds")
 orthologs_PAO1_LESB58 <- readRDS("data/orthologs_PAO1_LESB58.rds")
 orthologs_PA14_LESB58 <- readRDS("data/orthologs_PA14_LESB58.rds")
 
+# Example data
+exampleData <- read_tsv("exampleData/testPAO1IDs.txt", col_names = "Locus Tag")
+
 
 # Define function for getting annotations ---------------------------------
 
