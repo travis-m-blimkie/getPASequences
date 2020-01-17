@@ -423,15 +423,16 @@ server <- function(input, output, session) {
 
         # Print some text describing the number of matched/submitted genes.
         output$annoResultSummary <- renderUI({
-            isolate(annoDisplayTable())
-
-            tagList(
-                tags$br(),
-                tags$p(paste0(
-                    "Matched ", annoNumGenes()$matched, " out of ",
-                    annoNumGenes()$submitted, " genes submitted."
-                ))
-            )
+            input$annoSearch
+            isolate({
+                tagList(
+                    tags$br(),
+                    tags$p(paste0(
+                        "Matched ", annoNumGenes()$matched, " out of ",
+                        annoNumGenes()$submitted, " genes submitted."
+                    ))
+                )
+            })
         })
 
 
@@ -454,19 +455,20 @@ server <- function(input, output, session) {
         # (see above chunk). As before, we are being explicit with our use of DT
         # functions beacuse of potential overlap with `shiny` functions.
         output$annoMissingGenesPanel <- renderUI({
-            isolate(annoNoMatchGenes())
-
-            if (nrow(annoNoMatchGenes()) == 0) {
-                return(NULL)
-            } else {
-                return(tagList(
-                    tags$hr(),
-                    tags$h3("The following submitted genes had no matches:"),
-                    DT::dataTableOutput("annoMissingGenesTable"),
-                    tags$br(),
-                    tags$br()
-                ))
-            }
+            input$annoSearch
+            isolate({
+                if (nrow(annoNoMatchGenes()) == 0) {
+                    return(NULL)
+                } else {
+                    return(tagList(
+                        tags$hr(),
+                        tags$h3("The following submitted genes had no matches:"),
+                        DT::dataTableOutput("annoMissingGenesTable"),
+                        tags$br(),
+                        tags$br()
+                    ))
+                }
+            })
         })
 
 
@@ -484,23 +486,26 @@ server <- function(input, output, session) {
         # Rendering the download button once displayTable() is populated with
         # data (see above chunk).
         output$annoResultTableBtn <- renderUI({
-            if(nrow(annoDisplayTable()) != 0) {
-                tagList(
-                    tags$hr(),
-                    tags$p(
-                        "Download the annotation table as a tab delimited-file, ",
-                        "or the nucleotide or amino acid sequences in multi-",
-                        "fasta format."
-                    ),
-                    downloadButton(
-                        "annoResultTable_dl",
-                        tags$b("Annotations"),
-                        style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c; width: 200px" # #337ab7
-                    ),
-                    tags$br(),
-                    tags$br()
-                )
-            }
+            input$annoSearch
+            isolate({
+                if(nrow(annoDisplayTable()) != 0) {
+                    tagList(
+                        tags$hr(),
+                        tags$p(
+                            "Download the annotation table as a tab delimited-file, ",
+                            "or the nucleotide or amino acid sequences in multi-",
+                            "fasta format."
+                        ),
+                        downloadButton(
+                            "annoResultTable_dl",
+                            tags$b("Annotations"),
+                            style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c; width: 200px" # #337ab7
+                        ),
+                        tags$br(),
+                        tags$br()
+                    )
+                }
+            })
         })
 
 
@@ -555,28 +560,31 @@ server <- function(input, output, session) {
         # Now render both sequence download buttons simultaneously, along with
         # some specific styling via `tagList()`.
         output$annoSeqsBtn <- renderUI({
-            if (nrow(annoDisplayTable()) != 0) {
-                tagList(
-                    downloadButton(
-                        "annoNTSeqs_dl",
-                        tags$b("Nucleotide Sequences"),
-                        style = "width: 200px; background-color: #337ab7; border-color: #337ab7"
-                    ),
+            input$annoSearch
+            isolate({
+                if (nrow(annoDisplayTable()) != 0) {
+                    tagList(
+                        downloadButton(
+                            "annoNTSeqs_dl",
+                            tags$b("Nucleotide Sequences"),
+                            style = "width: 200px; background-color: #337ab7; border-color: #337ab7"
+                        ),
 
-                    # Divider so both sequence download buttons render on the
-                    # same line, with a small separation between them.
-                    tags$div(
-                        style = "display: inline-block; vertical-align: top; width: 10px;",
-                        HTML("<br>")
-                    ),
+                        # Divider so both sequence download buttons render on the
+                        # same line, with a small separation between them.
+                        tags$div(
+                            style = "display: inline-block; vertical-align: top; width: 10px;",
+                            HTML("<br>")
+                        ),
 
-                    downloadButton(
-                        "annoAASeqs_dl",
-                        tags$b("Protein Sequences"),
-                        style = "width: 200px; background-color: #337ab7; border-color: #337ab7"
+                        downloadButton(
+                            "annoAASeqs_dl",
+                            tags$b("Protein Sequences"),
+                            style = "width: 200px; background-color: #337ab7; border-color: #337ab7"
+                        )
                     )
-                )
-            }
+                }
+            })
         })
 
     }) ### Closes the observation based on search button input
