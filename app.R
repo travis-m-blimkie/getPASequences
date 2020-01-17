@@ -151,6 +151,17 @@ ui <- fluidPage(
                     ),
 
 
+                    tags$div(HTML("<br>")),
+
+
+                    # Link to load the example data
+                    actionLink(
+                        inputId = "tryExample",
+                        label = tags$b("Try Example Data"),
+                        style = "font-size: 110%"
+                    ),
+
+
                     # Download button for annotation table, to be created with
                     # `renderUI()`.
                     uiOutput("annoResultTableBtn"),
@@ -352,16 +363,28 @@ server <- function(input, output, session) {
     ## Annotation Tab ##
     ####################
 
+    # Reactive value which will hold either user input data or example data
     annoInputGenes <- reactiveVal()
 
-    # Extract the genes to be mapped, using a single regex to match locus tags
-    # from any of the three supported strains.
+
+    # Load example data if the link is clicked and provide a message
+    observeEvent(input$tryExample, {
+        annoInputGenes(exampleData)
+
+        showNotification(
+            paste0("Successfully load example data. Click the 'Search' button to proceed..."),
+            type = "message"
+        )
+    }, ignoreInit = TRUE, ignoreNULL = TRUE)
+
+
+    # Extract the user's genes to be mapped, using a single regex to match locus
+    # tags from any of the three supported strains.
     observeEvent(input$annoPastedInput, {
         str_extract_all(input$annoPastedInput, pattern = "PA(14|LES)?_?[0-9]{4,5}") %>%
             map(~str_trim(.)) %>%
             annoInputGenes()
     }, ignoreInit = TRUE, ignoreNULL = TRUE)
-
 
 
     # Convert to a data frame, and fix column name for easy joining later.

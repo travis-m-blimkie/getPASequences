@@ -13,3 +13,7 @@ dl dd {
 .conditional-help {
   margin-bottom: 10px;
 }
+
+.shiny-notification {
+  border: 5px solid #98aeb3;
+}
