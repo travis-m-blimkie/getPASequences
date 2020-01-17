@@ -8,9 +8,6 @@ library(shiny)
 # libraries, to keep this clean.
 source("global.R")
 
-
-# Define the UI elements --------------------------------------------------
-
 # Useful colours which match the flatly theme:
 # Dark blue   #2c3e50
 # Turquoise   #18bc9c
@@ -18,6 +15,8 @@ source("global.R")
 # DT blue     #0075b0
 # White       #fff
 
+
+# Define the UI elements --------------------------------------------------
 
 ui <- fluidPage(
     theme = shinytheme("flatly"),
@@ -112,7 +111,8 @@ ui <- fluidPage(
             sidebarLayout(
 
                 ### SIDEBAR PANEL ###
-                sidebarPanel(
+                sidebarPanel(tags$form(
+                    class = "well",
 
                     tags$p(HTML(
                         "<b>NOTE:</b> Non-matching IDs are returned in a ",
@@ -161,7 +161,7 @@ ui <- fluidPage(
                     uiOutput("annoSeqsBtn"),
 
                     tags$hr()
-                ),
+                )),
 
                 ### MAIN PANEL ###
                 mainPanel(
@@ -195,7 +195,9 @@ ui <- fluidPage(
 
             sidebarLayout(
 
-                sidebarPanel(
+                sidebarPanel(tags$form(
+                    class = "well",
+
                     tags$p(
                         "Please select the strains for which you wish to ",
                         "retreive orthologs:"
@@ -245,7 +247,7 @@ ui <- fluidPage(
                     ),
 
                     uiOutput("mappedOrtho_btn")
-                ),
+                )),
 
                 ### Main Panel ###
                 mainPanel(
