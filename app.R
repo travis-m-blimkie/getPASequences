@@ -352,13 +352,15 @@ server <- function(input, output, session) {
     ## Annotation Tab ##
     ####################
 
+    annoInputGenes <- reactiveVal()
+
     # Extract the genes to be mapped, using a single regex to match locus tags
     # from any of the three supported strains.
-    annoInputGenes <- reactive({
-        req(input$annoPastedInput)
+    observeEvent(input$annoPastedInput, {
         str_extract_all(input$annoPastedInput, pattern = "PA(14|LES)?_?[0-9]{4,5}") %>%
-            map(~str_trim(.))
-    })
+            map(~str_trim(.)) %>%
+            annoInputGenes()
+    }, ignoreInit = TRUE, ignoreNULL = TRUE)
 
 
 
