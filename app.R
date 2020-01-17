@@ -205,7 +205,7 @@ ui <- fluidPage(
 
 
                     # Choose strain 1
-                    tags$div(style = "display: inline-block;vertical-align:top; width: 150px;",
+                    tags$div(style = "display: inline-block; vertical-align: top; width: 150px;",
                         selectInput(
                             inputId = "strain1",
                             label = "Mapping from:",
@@ -216,7 +216,7 @@ ui <- fluidPage(
 
                     # Separator since we have both dropdowns on one "line"
                     tags$div(
-                        style = "display: inline-block;vertical-align:top; width: 100px;",
+                        style = "display: inline-block; vertical-align: top; width: 100px;",
                         HTML("<br>")
                     ),
 
