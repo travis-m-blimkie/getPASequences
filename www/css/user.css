@@ -4,9 +4,7 @@ dl dd {
 }
 
 /* Custom class to add border to sidebarPanels */
-/*
-.col-sm-4 {
+.well {
+  position: relative;
   border: 1px solid #98aeb3;
 }
-*/
-
