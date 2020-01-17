@@ -597,47 +597,46 @@ server <- function(input, output, session) {
             map(~str_trim(.))
     })
 
-    # Starting the mapping stuff
-    observeEvent(input$orthoSearch, {
 
+
+    # Convert to a data frame, and fix column name for easy joining later.
+    orthoGenesTable <- reactive({
+        req(orthoInputGenes(), input$strain1, input$strain2)
+
+        part1 <- data.frame(Genes = orthoInputGenes(), stringsAsFactors = FALSE)
+        colnames(part1) <- paste0(input$strain1, " Locus Tag")
+
+        return(part1)
+    })
+
+    mappedOrthoGenes <- reactive({
+        req(orthoGenesTable())
         isolate(input$orthoSearch)
 
-        # Convert to a data frame, and fix column name for easy joining later.
-        orthoGenesTable <- reactive({
-            req(orthoInputGenes(), input$strain1, input$strain2)
+        mapOrthosGenerally(
+            orthoGenesTable(),
+            strain1 = input$strain1,
+            strain2 = input$strain2
+        )
+    })
 
-            part1 <- data.frame(Genes = orthoInputGenes(), stringsAsFactors = FALSE)
-            colnames(part1) <- paste0(input$strain1, " Locus Tag")
+    # Handle genes without orthologs
+    missingOrthoGenes <- reactive({
+        req(orthoGenesTable(), input$strain1, input$strain2)
 
-            return(part1)
-        })
+        anti_join(orthoGenesTable(), mappedOrthoGenes())
+    })
 
-        mappedOrthoGenes <- reactive({
-            req(orthoGenesTable())
-            isolate(input$orthoSearch)
+    # Summarize mapped genes
+    orthoNumGenes <- reactive({
+        list(
+            submitted = nrow(orthoGenesTable()),
+            matched = nrow(mappedOrthoGenes())
+        )
+    })
 
-            mapOrthosGenerally(
-                orthoGenesTable(),
-                strain1 = input$strain1,
-                strain2 = input$strain2
-            )
-        })
-
-        # Handle genes without orthologs
-        missingOrthoGenes <- reactive({
-            req(orthoGenesTable(), input$strain1, input$strain2)
-
-            anti_join(orthoGenesTable(), mappedOrthoGenes())
-        })
-
-        # Summarize mapped genes
-        orthoNumGenes <- reactive({
-            list(
-                submitted = nrow(orthoGenesTable()),
-                matched = nrow(mappedOrthoGenes())
-            )
-        })
-
+    # Output main result table
+    observeEvent(input$orthoSearch, {
         output$orthoResultPanel <- DT::renderDataTable({
             isolate(mappedOrthoGenes())
         }, options = list(searching = FALSE,
@@ -648,10 +647,11 @@ server <- function(input, output, session) {
                           dom = "t"),
         rownames = FALSE,
         selection = "none")
+    })
 
-        output$orthoResultSummary <- renderUI({
-            isolate(mappedOrthoGenes())
-
+    output$orthoResultSummary <- renderUI({
+        input$orthoSearch
+        isolate({
             tagList(
                 tags$br(),
                 tags$p(paste0(
@@ -660,21 +660,22 @@ server <- function(input, output, session) {
                 ))
             )
         })
+    })
 
-        output$orthoMissingGenesTable <- DT::renderDataTable({
-            isolate(missingOrthoGenes())
-        }, options = list(searching = FALSE,
-                          scrollX = "100%",
-                          scrollY = "500px",
-                          scrollCollapse = TRUE,
-                          paging = FALSE,
-                          dom = "t"),
-        rownames = FALSE,
-        selection = "none")
+    output$orthoMissingGenesTable <- DT::renderDataTable({
+        isolate(missingOrthoGenes())
+    }, options = list(searching = FALSE,
+                      scrollX = "100%",
+                      scrollY = "500px",
+                      scrollCollapse = TRUE,
+                      paging = FALSE,
+                      dom = "t"),
+    rownames = FALSE,
+    selection = "none")
 
-        output$orthoMissingGenesPanel <- renderUI({
-            isolate(missingOrthoGenes())
-
+    output$orthoMissingGenesPanel <- renderUI({
+        input$orthoSearch
+        isolate({
             if (nrow(missingOrthoGenes()) == 0) {
                 return(NULL)
             } else {
@@ -687,21 +688,22 @@ server <- function(input, output, session) {
                 ))
             }
         })
+    })
 
-        # Download button for mapped orthologs
-        output$mappedOrtho_dl <- downloadHandler(
-            filename = function() {
-                paste0(input$strain1, "to", input$strain2, "_orthologs.txt")
-            },
-            content = function(file) {
-                write_delim(mappedOrthoGenes(), file, delim = "\t")
-            }
-        )
+    # Download button for mapped orthologs
+    output$mappedOrtho_dl <- downloadHandler(
+        filename = function() {
+            paste0(input$strain1, "to", input$strain2, "_orthologs.txt")
+        },
+        content = function(file) {
+            write_delim(mappedOrthoGenes(), file, delim = "\t")
+        }
+    )
 
-        # Render the download button when there's something to save
-        output$mappedOrtho_btn <- renderUI({
-            isolate(mappedOrthoGenes())
-
+    # Render the download button when there's something to save
+    output$mappedOrtho_btn <- renderUI({
+        input$orthoSearch
+        isolate({
             if (nrow(mappedOrthoGenes()) != 0) {
                 tagList(
                     tags$hr(),
@@ -715,7 +717,7 @@ server <- function(input, output, session) {
                 )
             }
         })
-    }) # Closing the `observeEvent()` for Ortholog Mapping
+    })
 }
 
 
