@@ -141,24 +141,22 @@ ui <- fluidPage(
                     ),
 
 
+                    # Link to load the example data
+                    actionLink(
+                        inputId = "tryExample",
+                        label = tags$b("Try Example Data"),
+                        style = "font-size: 110%"
+                    ),
+
+                    tags$div(HTML("<br>")),
+
                     # Button which triggers results to display. Most code depends on
                     # this input state changing before running (sort of?).
                     actionButton(
                         inputId = "annoSearch",
                         label = tags$b("Search"),
                         icon = icon("search"),
-                        style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px"
-                    ),
-
-
-                    tags$div(HTML("<br>")),
-
-
-                    # Link to load the example data
-                    actionLink(
-                        inputId = "tryExample",
-                        label = tags$b("Try Example Data"),
-                        style = "font-size: 110%"
+                        style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px; float: right;"
                     ),
 
 
@@ -373,7 +371,8 @@ server <- function(input, output, session) {
 
         showNotification(
             paste0("Successfully load example data. Click the 'Search' button to proceed..."),
-            type = "message"
+            type = "message",
+            duration = NULL
         )
     }, ignoreInit = TRUE, ignoreNULL = TRUE)
 
