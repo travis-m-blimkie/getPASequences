@@ -143,12 +143,11 @@ ui <- fluidPage(
 
                     # Link to load the example data
                     actionLink(
-                        inputId = "tryExample",
+                        inputId = "annoTryExample",
                         label = tags$b("Try Example Data"),
                         style = "font-size: 110%"
                     ),
 
-                    tags$div(HTML("<br>")),
 
                     # Button which triggers results to display. Most code depends on
                     # this input state changing before running (sort of?).
@@ -159,6 +158,7 @@ ui <- fluidPage(
                         style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px; float: right;"
                     ),
 
+                    tags$div(HTML("<br>")),
 
                     # Download button for annotation table, to be created with
                     # `renderUI()`.
@@ -248,12 +248,22 @@ ui <- fluidPage(
                         height = "300px"
                     ),
 
+
+                    # Link to load the example data
+                    actionLink(
+                        inputId = "orthoTryExample",
+                        label = tags$b("Try Example Data"),
+                        style = "font-size: 110%"
+                    ),
+
                     actionButton(
                         "orthoSearch",
                         tags$b("Map"),
                         icon = icon("search"),
-                        style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px"
+                        style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px; float: right;"
                     ),
+
+                    tags$div(HTML("<br>")),
 
                     uiOutput("mappedOrtho_btn")
                 )),
@@ -366,13 +376,13 @@ server <- function(input, output, session) {
 
 
     # Load example data if the link is clicked and provide a message
-    observeEvent(input$tryExample, {
+    observeEvent(input$annoTryExample, {
         annoInputGenes(exampleData)
 
         showNotification(
-            paste0("Successfully load example data. Click the 'Search' button to proceed..."),
+            paste0("Successfully loaded example data! Click the 'Search' button to proceed..."),
             type = "message",
-            duration = NULL
+            duration = 10
         )
     }, ignoreInit = TRUE, ignoreNULL = TRUE)
 
@@ -388,7 +398,7 @@ server <- function(input, output, session) {
 
     # Convert to a data frame, and fix column name for easy joining later.
     annoInputGenesTable <- reactive({
-        req(annoInputGenes())
+        req(annoInputGenes(), input$annoSearch)
         part1 <- data.frame(Genes = annoInputGenes(), stringsAsFactors = FALSE)
         colnames(part1) <- "Locus Tag"
         return(part1)
@@ -616,18 +626,33 @@ server <- function(input, output, session) {
     ## Ortholog Tab ##
     ##################
 
-    # Extract and clean input genes
-    orthoInputGenes <- reactive({
-        req(input$orthoPastedInput)
-        str_extract_all(input$orthoPastedInput, pattern = "PA(14|LES)?_?[0-9]{4,5}") %>%
-            map(~str_trim(.))
-    })
+    # Set up the initial reactive value
+    orthoInputGenes <- reactiveVal()
 
+
+    # Load in example data when the link is clicked, and show a message.
+    observeEvent(input$orthoTryExample, {
+        orthoInputGenes(exampleData)
+
+        showNotification(
+            paste0("Successfully loaded example data! Click the 'Map' button to proceed..."),
+            type = "message",
+            duration = 10
+        )
+    }, ignoreInit = TRUE, ignoreNULL = TRUE)
+
+
+    # Extract and clean input genes from the user
+    observeEvent(input$orthoPastedInput, {
+        str_extract_all(input$orthoPastedInput, pattern = "PA(14|LES)?_?[0-9]{4,5}") %>%
+            map(~str_trim(.)) %>%
+            orthoInputGenes()
+    })
 
 
     # Convert to a data frame, and fix column name for easy joining later.
     orthoGenesTable <- reactive({
-        req(orthoInputGenes(), input$strain1, input$strain2)
+        req(orthoInputGenes(), input$strain1, input$strain2, input$orthoSearch)
 
         part1 <- data.frame(Genes = orthoInputGenes(), stringsAsFactors = FALSE)
         colnames(part1) <- paste0(input$strain1, " Locus Tag")
