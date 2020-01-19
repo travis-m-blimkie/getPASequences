@@ -24,4 +24,4 @@ Available with the MIT license.
 
 ***
 
-![](www/screenshot.svg)
+![](www/PATool_landingPage.svg)
