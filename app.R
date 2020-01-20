@@ -158,7 +158,8 @@ ui <- fluidPage(
                         style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px; float: right;"
                     ),
 
-                    tags$div(HTML("<br>")),
+                    # tags$div(HTML("<br>")),
+                    # tags$br(),
 
                     # Download button for annotation table, to be created with
                     # `renderUI()`.
@@ -209,9 +210,11 @@ ui <- fluidPage(
 
                     tags$p(
                         "Please select the strains for which you wish to ",
-                        "retreive orthologs:"
+                        "retreive orthologs. Note that IDs must be in the ",
+                        "proper format to be recognized and parsed correctly."
                     ),
 
+                    tags$br(),
 
                     # Choose strain 1
                     tags$div(style = "display: inline-block; vertical-align: top; width: 150px;",
@@ -231,7 +234,7 @@ ui <- fluidPage(
 
 
                     # Choose strain 2
-                    tags$div(style = "display: inline-block;vertical-align:top; width: 150px;",
+                    tags$div(style = "display: inline-block; vertical-align: top; width: 150px;",
                         selectInput(
                             inputId = "strain2",
                             label = "Mappping to:",
@@ -263,6 +266,7 @@ ui <- fluidPage(
                         style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px; float: right;"
                     ),
 
+                    tags$div(HTML("<br>")),
                     tags$div(HTML("<br>")),
 
                     uiOutput("mappedOrtho_btn")
@@ -524,7 +528,7 @@ server <- function(input, output, session) {
         isolate({
             if(nrow(annoDisplayTable()) != 0) {
                 tagList(
-                    tags$hr(),
+                    # tags$hr(),
                     tags$p(
                         "Download the annotation table as a tab delimited-file, ",
                         "or the nucleotide or amino acid sequences in multi-",
