@@ -380,7 +380,7 @@ server <- function(input, output, session) {
         annoInputGenes(exampleData)
 
         showNotification(
-            paste0("Successfully loaded example data! Click the 'Search' button to proceed..."),
+            paste0("Successfully loaded example data! Click the 'Search' button to proceed."),
             type = "message",
             duration = 10
         )
@@ -635,7 +635,7 @@ server <- function(input, output, session) {
         orthoInputGenes(exampleData)
 
         showNotification(
-            paste0("Successfully loaded example data! Click the 'Map' button to proceed..."),
+            paste0("Successfully loaded example data! Click the 'Map' button to proceed."),
             type = "message",
             duration = 10
         )
