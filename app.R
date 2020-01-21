@@ -158,8 +158,8 @@ ui <- fluidPage(
                         style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px; float: right;"
                     ),
 
-                    # tags$div(HTML("<br>")),
-                    # tags$br(),
+                    tags$div(HTML("<br>")),
+                    tags$div(HTML("<br>")),
 
                     # Download button for annotation table, to be created with
                     # `renderUI()`.
