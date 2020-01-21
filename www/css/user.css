@@ -4,33 +4,50 @@ dl dd {
   margin-left: 1em;
 }
 
+.container-fluid {
+  padding-left: 0;
+  padding-right: 0;
+}
+
 /* Custom class to add border to sidebarPanels */
 .well {
   position: relative;
   border: 1px solid #98aeb3;
 }
 
-/* Changing the position of the notification so it appears below the sidebar */
-.shiny-notification {
-  position: fixed;
-  top: calc(90%);
-  left: 25px
-}
-
-/* Change the background and text colour of the popup message */
-.shiny-notification-message {
-  border: 3px solid #0c5a4b;
-  background-color: #18bc9c;
-  color: #fff;
-  font-weight: bold;
-  width: 250px
-}
-
-/* Changing the colour of the 'x' to match the font colour */
-.shiny-notification-close {
-  color: #fff;
-}
-
+/* Add border around jumbotron elements */
 .jumbotron {
   border: 1px solid #98aeb3;
+  padding-top: 0;
+  padding-bottom: 24px;
+}
+
+/* Remove margin for the tab header */
+.tab-header {
+  margin-top: 0;
+}
+
+/* Adjust padding for the tab header */
+.navbar-brand {
+  padding-top: 15px;
+  padding-bottom: 0;
+  padding-left: 0;
+  margin-left: 0;
+}
+
+#nav ul {
+  padding-left: 0;
+}
+
+/* Adjust padding for elements of the navbar */
+.navbar,
+.tab-content {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+/* Change padding around sidebar panels */
+.col-sm-4 {
+  padding-right: 15px;
+  padding-left: 0;
 }

@@ -9,11 +9,12 @@ library(shiny)
 source("global.R")
 
 # Useful colours which match the flatly theme:
-# Dark blue   #2c3e50
-# Turquoise   #18bc9c
-# Light blue  #3498db
-# DT blue     #0075b0
-# White       #fff
+# Dark blue     #2c3e50
+# Grey          #75818c
+# Turquoise     #18bc9c
+# Light blue    #3498db
+# DT blue       #0075b0
+# White         #fff
 
 
 # Define the UI elements --------------------------------------------------
@@ -85,7 +86,7 @@ ui <- fluidPage(
                             "annoTabBtn",
                             "Get Annotations & Sequences",
                             class = "btn btn-primary btn-lg",
-                            style = "color: #fff; background-color: #3498db; border-color: #3498db;"
+                            style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50;"
                         ),
 
                         HTML("&nbsp;&nbsp;&nbsp;"),
@@ -94,7 +95,7 @@ ui <- fluidPage(
                             "orthoTabBtn",
                             "Perform Ortholog Mapping",
                             class = "btn btn-primary btn-lg",
-                            style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50;"
+                            style = "color: #fff; background-color: #75818c; border-color: #75818c;"
                         )
                     )
                 )
@@ -108,10 +109,13 @@ ui <- fluidPage(
             value = "annoTab",
             "Annotations and Sequences",
 
-            sidebarLayout(
+            # Custome sidebarLayout
+            tags$div(
+                class = "col-sm-4 manual-sidebar",
+                id = "annoPanelSidebar",
 
                 ### SIDEBAR PANEL ###
-                sidebarPanel(tags$form(
+                tags$form(
                     class = "well",
 
                     tags$p(HTML(
@@ -145,7 +149,7 @@ ui <- fluidPage(
                     actionLink(
                         inputId = "annoTryExample",
                         label = tags$b("Try Example Data"),
-                        style = "font-size: 110%"
+                        style = "font-size: 110%;"
                     ),
 
 
@@ -158,8 +162,8 @@ ui <- fluidPage(
                         style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px; float: right;"
                     ),
 
-                    tags$div(HTML("<br>")),
-                    tags$div(HTML("<br>")),
+                    tags$br(),
+                    tags$br(),
 
                     # Download button for annotation table, to be created with
                     # `renderUI()`.
@@ -168,31 +172,30 @@ ui <- fluidPage(
 
                     # Download button for nucleotide and amino acid sequences, hidden
                     # until data is available.
-                    uiOutput("annoSeqsBtn"),
-
-                    tags$hr()
-                )),
-
-                ### MAIN PANEL ###
-                mainPanel(
-
-                    # Render panel for the matched results/annotations (showing
-                    # `displayTable()`). NOTE that we want use the DT functions
-                    # when rendering output tables. There are `shiny` versions
-                    # of the same functions, and although DT is loaded later, we
-                    # want to be explicit just in case.
-                    h3("Your results will be displayed below:"),
-                    tags$br(),
-                    DT::dataTableOutput("annoDisplayTable"),
-
-                    uiOutput(outputId = "annoResultSummary"),
-
-                    # Output for the non-matching genes. Using `uiOutput()` here
-                    # so that it only displays if there are non-matching genes
-                    # (i.e. the table which holds said genes has more than 0
-                    # rows).
-                    uiOutput("annoMissingGenesPanel")
+                    uiOutput("annoSeqsBtn")
                 )
+            ),
+
+            ### MAIN PANEL ###
+            tags$div(
+                class = "col-sm-8",
+
+                # Render panel for the matched results/annotations (showing
+                # `displayTable()`). NOTE that we want use the DT functions
+                # when rendering output tables. There are `shiny` versions
+                # of the same functions, and although DT is loaded later, we
+                # want to be explicit just in case.
+                h3("Your results will be displayed below:"),
+                tags$br(),
+                DT::dataTableOutput("annoDisplayTable"),
+
+                uiOutput(outputId = "annoResultSummary"),
+
+                # Output for the non-matching genes. Using `uiOutput()` here
+                # so that it only displays if there are non-matching genes
+                # (i.e. the table which holds said genes has more than 0
+                # rows).
+                uiOutput("annoMissingGenesPanel")
             )
         ),
 
@@ -203,9 +206,11 @@ ui <- fluidPage(
             value = "orthoTab",
             title = "Ortholog Mapping",
 
-            sidebarLayout(
+            tags$div(
+                class = "col-sm-4 manual-sidebar",
+                id = "orthoPanelSidebar",
 
-                sidebarPanel(tags$form(
+                tags$form(
                     class = "well",
 
                     tags$p(
@@ -218,12 +223,12 @@ ui <- fluidPage(
 
                     # Choose strain 1
                     tags$div(style = "display: inline-block; vertical-align: top; width: 150px;",
-                        selectInput(
-                            inputId = "strain1",
-                            label = "Mapping from:",
-                            choices = c(PAO1 = "PAO1", PA14 = "PA14", LESB58 = "LESB58"),
-                            selected = "PAO1"
-                        )
+                             selectInput(
+                                 inputId = "strain1",
+                                 label = "Mapping from:",
+                                 choices = c(PAO1 = "PAO1", PA14 = "PA14", LESB58 = "LESB58"),
+                                 selected = "PAO1"
+                             )
                     ),
 
                     # Separator since we have both dropdowns on one "line"
@@ -235,12 +240,12 @@ ui <- fluidPage(
 
                     # Choose strain 2
                     tags$div(style = "display: inline-block; vertical-align: top; width: 150px;",
-                        selectInput(
-                            inputId = "strain2",
-                            label = "Mappping to:",
-                            choices = c(PAO1 = "PAO1", PA14 = "PA14", LESB58 = "LESB58"),
-                            selected = "PA14"
-                        )
+                             selectInput(
+                                 inputId = "strain2",
+                                 label = "Mappping to:",
+                                 choices = c(PAO1 = "PAO1", PA14 = "PA14", LESB58 = "LESB58"),
+                                 selected = "PA14"
+                             )
                     ),
 
                     # Input area for genes
@@ -266,24 +271,26 @@ ui <- fluidPage(
                         style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px; float: right;"
                     ),
 
-                    tags$div(HTML("<br>")),
-                    tags$div(HTML("<br>")),
+                    tags$br(),
+                    tags$br(),
 
                     uiOutput("mappedOrtho_btn")
-                )),
-
-                ### Main Panel ###
-                mainPanel(
-                    tags$h3("Your results will be displayed below:"),
-                    tags$br(),
-                    DT::dataTableOutput("orthoResultPanel"),
-
-                    # Summary of number of mapped genes
-                    uiOutput("orthoResultSummary"),
-
-                    # Show missing genes if present
-                    uiOutput("orthoMissingGenesPanel")
                 )
+            ),
+
+            ### Main Panel ###
+            tags$div(
+                class = "col-sm-8",
+
+                tags$h3("Your results will be displayed below:"),
+                tags$br(),
+                DT::dataTableOutput("orthoResultPanel"),
+
+                # Summary of number of mapped genes
+                uiOutput("orthoResultSummary"),
+
+                # Show missing genes if present
+                uiOutput("orthoMissingGenesPanel")
             )
         ),
 
@@ -383,10 +390,20 @@ server <- function(input, output, session) {
     observeEvent(input$annoTryExample, {
         annoInputGenes(exampleData)
 
-        showNotification(
-            paste0("Successfully loaded example data! Click the 'Search' button to proceed."),
-            type = "message",
-            duration = 10
+        insertUI(
+            selector = "#annoPanelSidebar",
+            where = "beforeEnd",
+            ui = tags$div(
+                id = "exampleSuccessAlert",
+                class = "alert alert-dissmissible alert-success",
+                tags$button(
+                    HTML("&times;"),
+                    type = "button",
+                    class = "close",
+                    `data-dismiss` = "alert"
+                ),
+                tags$b("Example data successfully loaded. Click the 'Search' button to continue.")
+            )
         )
     }, ignoreInit = TRUE, ignoreNULL = TRUE)
 
@@ -528,7 +545,7 @@ server <- function(input, output, session) {
         isolate({
             if(nrow(annoDisplayTable()) != 0) {
                 tagList(
-                    # tags$hr(),
+                    tags$hr(),
                     tags$p(
                         "Download the annotation table as a tab delimited-file, ",
                         "or the nucleotide or amino acid sequences in multi-",
@@ -537,7 +554,7 @@ server <- function(input, output, session) {
                     downloadButton(
                         "annoResultTable_dl",
                         tags$b("Annotations"),
-                        style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c; width: 200px" # #337ab7
+                        style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 200px" # #337ab7
                     ),
                     tags$br(),
                     tags$br()
@@ -605,7 +622,7 @@ server <- function(input, output, session) {
                     downloadButton(
                         "annoNTSeqs_dl",
                         tags$b("Nucleotide Sequences"),
-                        style = "width: 200px; background-color: #337ab7; border-color: #337ab7"
+                        style = "width: 200px; background-color: #75818c; border-color: #75818c"
                     ),
 
                     # Divider so both sequence download buttons render on the
@@ -618,7 +635,7 @@ server <- function(input, output, session) {
                     downloadButton(
                         "annoAASeqs_dl",
                         tags$b("Protein Sequences"),
-                        style = "width: 200px; background-color: #337ab7; border-color: #337ab7"
+                        style = "width: 200px; background-color: #75818c; border-color: #75818c"
                     )
                 )
             }
@@ -638,10 +655,19 @@ server <- function(input, output, session) {
     observeEvent(input$orthoTryExample, {
         orthoInputGenes(exampleData)
 
-        showNotification(
-            paste0("Successfully loaded example data! Click the 'Map' button to proceed."),
-            type = "message",
-            duration = 10
+        insertUI(
+            selector = "#orthoPanelSidebar",
+            where = "beforeEnd",
+            ui = tags$div(
+                class = "alert alert-dissmissible alert-success",
+                tags$button(
+                    HTML("&times;"),
+                    type = "button",
+                    class = "close",
+                    `data-dismiss` = "alert"
+                ),
+                tags$b("Example data successfully loaded. Click the 'Map' button to continue.")
+            )
         )
     }, ignoreInit = TRUE, ignoreNULL = TRUE)
 
@@ -766,7 +792,7 @@ server <- function(input, output, session) {
                     downloadButton(
                         "mappedOrtho_dl",
                         tags$b("Download Orthologs"),
-                        style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c"
+                        style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50"
                     ),
                     tags$br()
                 )
