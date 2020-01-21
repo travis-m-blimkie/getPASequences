@@ -10,12 +10,20 @@ dl dd {
   border: 1px solid #98aeb3;
 }
 
+/* Changing the position of the notification so it appears below the sidebar */
+.shiny-notification {
+  position: fixed;
+  top: calc(90%);
+  left: 20px
+}
+
 /* Change the background and text colour of the popup message */
 .shiny-notification-message {
   border: 3px solid #0c5a4b;
   background-color: #18bc9c;
   color: #fff;
   font-weight: bold;
+  width: 250px
 }
 
 /* Changing the colour of the 'x' to match the font colour */
@@ -23,3 +31,6 @@ dl dd {
   color: #fff;
 }
 
+.jumbotron {
+  border: 1px solid #98aeb3;
+}
