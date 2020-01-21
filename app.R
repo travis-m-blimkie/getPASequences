@@ -8,9 +8,6 @@ library(shiny)
 # libraries, to keep this clean.
 source("global.R")
 
-
-# Define the UI elements --------------------------------------------------
-
 # Useful colours which match the flatly theme:
 # Dark blue   #2c3e50
 # Turquoise   #18bc9c
@@ -18,6 +15,8 @@ source("global.R")
 # DT blue     #0075b0
 # White       #fff
 
+
+# Define the UI elements --------------------------------------------------
 
 ui <- fluidPage(
     theme = shinytheme("flatly"),
@@ -112,7 +111,8 @@ ui <- fluidPage(
             sidebarLayout(
 
                 ### SIDEBAR PANEL ###
-                sidebarPanel(
+                sidebarPanel(tags$form(
+                    class = "well",
 
                     tags$p(HTML(
                         "<b>NOTE:</b> Non-matching IDs are returned in a ",
@@ -141,15 +141,25 @@ ui <- fluidPage(
                     ),
 
 
+                    # Link to load the example data
+                    actionLink(
+                        inputId = "annoTryExample",
+                        label = tags$b("Try Example Data"),
+                        style = "font-size: 110%"
+                    ),
+
+
                     # Button which triggers results to display. Most code depends on
                     # this input state changing before running (sort of?).
                     actionButton(
                         inputId = "annoSearch",
                         label = tags$b("Search"),
                         icon = icon("search"),
-                        style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px"
+                        style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px; float: right;"
                     ),
 
+                    # tags$div(HTML("<br>")),
+                    # tags$br(),
 
                     # Download button for annotation table, to be created with
                     # `renderUI()`.
@@ -161,7 +171,7 @@ ui <- fluidPage(
                     uiOutput("annoSeqsBtn"),
 
                     tags$hr()
-                ),
+                )),
 
                 ### MAIN PANEL ###
                 mainPanel(
@@ -195,15 +205,19 @@ ui <- fluidPage(
 
             sidebarLayout(
 
-                sidebarPanel(
+                sidebarPanel(tags$form(
+                    class = "well",
+
                     tags$p(
                         "Please select the strains for which you wish to ",
-                        "retreive orthologs:"
+                        "retreive orthologs. Note that IDs must be in the ",
+                        "proper format to be recognized and parsed correctly."
                     ),
 
+                    tags$br(),
 
                     # Choose strain 1
-                    tags$div(style = "display: inline-block;vertical-align:top; width: 150px;",
+                    tags$div(style = "display: inline-block; vertical-align: top; width: 150px;",
                         selectInput(
                             inputId = "strain1",
                             label = "Mapping from:",
@@ -214,13 +228,13 @@ ui <- fluidPage(
 
                     # Separator since we have both dropdowns on one "line"
                     tags$div(
-                        style = "display: inline-block;vertical-align:top; width: 100px;",
+                        style = "display: inline-block; vertical-align: top; width: 100px;",
                         HTML("<br>")
                     ),
 
 
                     # Choose strain 2
-                    tags$div(style = "display: inline-block;vertical-align:top; width: 150px;",
+                    tags$div(style = "display: inline-block; vertical-align: top; width: 150px;",
                         selectInput(
                             inputId = "strain2",
                             label = "Mappping to:",
@@ -237,15 +251,26 @@ ui <- fluidPage(
                         height = "300px"
                     ),
 
+
+                    # Link to load the example data
+                    actionLink(
+                        inputId = "orthoTryExample",
+                        label = tags$b("Try Example Data"),
+                        style = "font-size: 110%"
+                    ),
+
                     actionButton(
                         "orthoSearch",
                         tags$b("Map"),
                         icon = icon("search"),
-                        style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px"
+                        style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px; float: right;"
                     ),
 
+                    tags$div(HTML("<br>")),
+                    tags$div(HTML("<br>")),
+
                     uiOutput("mappedOrtho_btn")
-                ),
+                )),
 
                 ### Main Panel ###
                 mainPanel(
@@ -350,65 +375,77 @@ server <- function(input, output, session) {
     ## Annotation Tab ##
     ####################
 
-    # Extract the genes to be mapped, using a single regex to match locus tags
-    # from any of the three supported strains.
-    annoInputGenes <- reactive({
-        req(input$annoPastedInput)
+    # Reactive value which will hold either user input data or example data
+    annoInputGenes <- reactiveVal()
+
+
+    # Load example data if the link is clicked and provide a message
+    observeEvent(input$annoTryExample, {
+        annoInputGenes(exampleData)
+
+        showNotification(
+            paste0("Successfully loaded example data! Click the 'Search' button to proceed."),
+            type = "message",
+            duration = 10
+        )
+    }, ignoreInit = TRUE, ignoreNULL = TRUE)
+
+
+    # Extract the user's genes to be mapped, using a single regex to match locus
+    # tags from any of the three supported strains.
+    observeEvent(input$annoPastedInput, {
         str_extract_all(input$annoPastedInput, pattern = "PA(14|LES)?_?[0-9]{4,5}") %>%
-            map(~str_trim(.))
+            map(~str_trim(.)) %>%
+            annoInputGenes()
+    }, ignoreInit = TRUE, ignoreNULL = TRUE)
+
+
+    # Convert to a data frame, and fix column name for easy joining later.
+    annoInputGenesTable <- reactive({
+        req(annoInputGenes(), input$annoSearch)
+        part1 <- data.frame(Genes = annoInputGenes(), stringsAsFactors = FALSE)
+        colnames(part1) <- "Locus Tag"
+        return(part1)
     })
 
 
-    ### Delay all code until the search button is pressed. End of this is noted
-    ### with a comment. Might need to change this...
+    # Map the input genes, dependent on strain. Notice this function uses
+    # `inner_join()`, which means genes with no hits must be handled
+    # separately.
+    annoFilteredTable <- reactive({
+        req(annoInputGenesTable(), input$annoStrainChoice)
+        retrieveAnnotations(annoInputGenesTable(), strain = input$annoStrainChoice)
+    })
+
+
+    # Create table without sequence to facilitate display. This is also the
+    # annotation table the user downloads with the "Download Annotations"
+    # button.
+    annoDisplayTable <- reactive({
+        annoFilteredTable() %>%
+            select(-c(`Nucleotide Sequence`, `Amino Acid Sequence`)) %>%
+            arrange(`Locus Tag`)
+    })
+
+    # Get numbers of genes to be included as a summary below the results table
+    annoNumGenes <- reactive({
+        list(
+            submitted = nrow(annoInputGenesTable()),
+            matched = nrow(annoDisplayTable())
+        )
+    })
+
+
+    # Now we deal with any genes submitted that didn't have a match.
+    annoNoMatchGenes <- reactive({
+        anti_join(annoInputGenesTable(), annoFilteredTable(), by = "Locus Tag")
+    })
+
+
+    # Create and render the table of results; prevent updating the results
+    # table when input IDs are changed until the search button is pressed
+    # again. As before, we are being explicit with our use of DT functions.
     observeEvent(input$annoSearch, {
-
-
-        # Convert to a data frame, and fix column name for easy joining later.
-        annoInputGenesTable <- reactive({
-            req(annoInputGenes())
-            part1 <- data.frame(Genes = annoInputGenes(), stringsAsFactors = FALSE)
-            colnames(part1) <- "Locus Tag"
-            return(part1)
-        })
-
-
-        # Map the input genes, dependent on strain. Notice this function uses
-        # `inner_join()`, which means genes with no hits must be handled
-        # separately.
-        annoFilteredTable <- reactive({
-            req(annoInputGenesTable(), input$annoStrainChoice)
-            retrieveAnnotations(annoInputGenesTable(), strain = input$annoStrainChoice)
-        })
-
-
-        # Create table without sequence to facilitate display. This is also the
-        # annotation table the user downloads with the "Download Annotations"
-        # button.
-        annoDisplayTable <- reactive({
-            annoFilteredTable() %>%
-                select(-c(`Nucleotide Sequence`, `Amino Acid Sequence`)) %>%
-                arrange(`Locus Tag`)
-        })
-
-        # Get numbers of genes to be included as a summary below the results table
-        annoNumGenes <- reactive({
-            list(
-                submitted = nrow(annoInputGenesTable()),
-                matched = nrow(annoDisplayTable())
-            )
-        })
-
-
-        # Now we deal with any genes submitted that didn't have a match.
-        annoNoMatchGenes <- reactive({
-            anti_join(annoInputGenesTable(), annoFilteredTable(), by = "Locus Tag")
-        })
-
-
-        # Create and render the table of results; prevent updating the results
-        # table when input IDs are changed until the search button is pressed
-        # again. As before, we are being explicit with our use of DT functions.
         output$annoDisplayTable <- DT::renderDataTable({
             isolate(annoDisplayTable())
         }, options = list(searching = FALSE,
@@ -420,11 +457,12 @@ server <- function(input, output, session) {
         rownames = FALSE,
         selection = "none"
         )
+    })
 
-        # Print some text describing the number of matched/submitted genes.
-        output$annoResultSummary <- renderUI({
-            isolate(annoDisplayTable())
-
+    # Print some text describing the number of matched/submitted genes.
+    output$annoResultSummary <- renderUI({
+        input$annoSearch
+        isolate({
             tagList(
                 tags$br(),
                 tags$p(paste0(
@@ -433,29 +471,30 @@ server <- function(input, output, session) {
                 ))
             )
         })
+    })
 
 
-        # Create the output for non-matching genes, if present. This first chunk
-        # creates the table which will be rendered conditionally in the next
-        # block. As before, we are being explicit with our use of DT functions.
-        output$annoMissingGenesTable <- DT::renderDataTable({
-            isolate(annoNoMatchGenes())
-        }, options = list(searching = FALSE,
-                          scrollX = "100%",
-                          scrollY = "250px",
-                          scrollCollapse = TRUE,
-                          paging = FALSE,
-                          dom = "t"),
-        rownames = FALSE,
-        selection = "none"
-        )
+    # Create the output for non-matching genes, if present. This first chunk
+    # creates the table which will be rendered conditionally in the next
+    # block. As before, we are being explicit with our use of DT functions.
+    output$annoMissingGenesTable <- DT::renderDataTable({
+        isolate(annoNoMatchGenes())
+    }, options = list(searching = FALSE,
+                      scrollX = "100%",
+                      scrollY = "250px",
+                      scrollCollapse = TRUE,
+                      paging = FALSE,
+                      dom = "t"),
+    rownames = FALSE,
+    selection = "none"
+    )
 
-        # This chunk renders the results only if there are non-matching genes
-        # (see above chunk). As before, we are being explicit with our use of DT
-        # functions beacuse of potential overlap with `shiny` functions.
-        output$annoMissingGenesPanel <- renderUI({
-            isolate(annoNoMatchGenes())
-
+    # This chunk renders the results only if there are non-matching genes
+    # (see above chunk). As before, we are being explicit with our use of DT
+    # functions beacuse of potential overlap with `shiny` functions.
+    output$annoMissingGenesPanel <- renderUI({
+        input$annoSearch
+        isolate({
             if (nrow(annoNoMatchGenes()) == 0) {
                 return(NULL)
             } else {
@@ -468,25 +507,28 @@ server <- function(input, output, session) {
                 ))
             }
         })
+    })
 
 
-        # Download file for displayTable (annotations) to be shown with next
-        # chunk via `renderUI()`.
-        output$annoResultTable_dl <- downloadHandler(
-            filename = function() {
-                paste0(input$annoStrainChoice, "_annotations.txt")
-            },
-            content = function(file) {
-                write_delim(annoDisplayTable(), file, delim = "\t")
-            }
-        )
+    # Download file for displayTable (annotations) to be shown with next
+    # chunk via `renderUI()`.
+    output$annoResultTable_dl <- downloadHandler(
+        filename = function() {
+            paste0(input$annoStrainChoice, "_annotations.txt")
+        },
+        content = function(file) {
+            write_delim(annoDisplayTable(), file, delim = "\t")
+        }
+    )
 
-        # Rendering the download button once displayTable() is populated with
-        # data (see above chunk).
-        output$annoResultTableBtn <- renderUI({
+    # Rendering the download button once displayTable() is populated with
+    # data (see above chunk).
+    output$annoResultTableBtn <- renderUI({
+        input$annoSearch
+        isolate({
             if(nrow(annoDisplayTable()) != 0) {
                 tagList(
-                    tags$hr(),
+                    # tags$hr(),
                     tags$p(
                         "Download the annotation table as a tab delimited-file, ",
                         "or the nucleotide or amino acid sequences in multi-",
@@ -502,59 +544,62 @@ server <- function(input, output, session) {
                 )
             }
         })
+    })
 
 
-        # Here we set up the handlers for downloading sequence information.
-        # Tables for nt and aa sequences are created independently, but the
-        # buttons to download them are rendered at the same time.
+    # Here we set up the handlers for downloading sequence information.
+    # Tables for nt and aa sequences are created independently, but the
+    # buttons to download them are rendered at the same time.
 
-        # First the `downloadHandler()` for nucleotide sequences i.e.
-        # annoNTSeqs_dl.
-        output$annoNTSeqs_dl <- downloadHandler(
-            filename = function() {
-                paste0(input$annoStrainChoice, "_nucleotideSequences.fasta")
-            },
-            content = function(file) {
-                write.fasta(
-                    as.list(annoFilteredTable()$`Nucleotide Sequence`),
-                    names = paste0(
-                        annoFilteredTable()$`Locus Tag`,
-                        " | ",
-                        annoFilteredTable()$`Name`,
-                        "; ",
-                        annoFilteredTable()$`Description`
-                    ),
-                    file.out = file
-                )
-            }
-        )
-
-
-        # The the `downloadHandler()` for amino acid sequences i.e.
-        # annoAASeqs_dl
-        output$annoAASeqs_dl <- downloadHandler(
-            filename = function() {
-                paste0(input$annoStrainChoice, "_proteinSequences.fasta")
-            },
-            content = function(file) {
-                write.fasta(
-                    as.list(annoFilteredTable()$`Amino Acid Sequence`),
-                    names = paste0(
-                        annoFilteredTable()$`Locus Tag`,
-                        " | ",
-                        annoFilteredTable()$Name,
-                        "; ",
-                        annoFilteredTable()$Description
-                    ),
-                    file.out = file
-                )
-            }
-        )
+    # First the `downloadHandler()` for nucleotide sequences i.e.
+    # annoNTSeqs_dl.
+    output$annoNTSeqs_dl <- downloadHandler(
+        filename = function() {
+            paste0(input$annoStrainChoice, "_nucleotideSequences.fasta")
+        },
+        content = function(file) {
+            write.fasta(
+                as.list(annoFilteredTable()$`Nucleotide Sequence`),
+                names = paste0(
+                    annoFilteredTable()$`Locus Tag`,
+                    " | ",
+                    annoFilteredTable()$`Name`,
+                    "; ",
+                    annoFilteredTable()$`Description`
+                ),
+                file.out = file
+            )
+        }
+    )
 
 
-        # Now render both sequence download buttons simultaneously, along with
-        # some specific styling via `tagList()`.
-        output$annoSeqsBtn <- renderUI({
+    # The the `downloadHandler()` for amino acid sequences i.e.
+    # annoAASeqs_dl
+    output$annoAASeqs_dl <- downloadHandler(
+        filename = function() {
+            paste0(input$annoStrainChoice, "_proteinSequences.fasta")
+        },
+        content = function(file) {
+            write.fasta(
+                as.list(annoFilteredTable()$`Amino Acid Sequence`),
+                names = paste0(
+                    annoFilteredTable()$`Locus Tag`,
+                    " | ",
+                    annoFilteredTable()$Name,
+                    "; ",
+                    annoFilteredTable()$Description
+                ),
+                file.out = file
+            )
+        }
+    )
+
+
+    # Now render both sequence download buttons simultaneously, along with
+    # some specific styling via `tagList()`.
+    output$annoSeqsBtn <- renderUI({
+        input$annoSearch
+        isolate({
             if (nrow(annoDisplayTable()) != 0) {
                 tagList(
                     downloadButton(
@@ -578,62 +623,75 @@ server <- function(input, output, session) {
                 )
             }
         })
-
-    }) ### Closes the observation based on search button input
+    })
 
 
     ##################
     ## Ortholog Tab ##
     ##################
 
-    # Extract and clean input genes
-    orthoInputGenes <- reactive({
-        req(input$orthoPastedInput)
+    # Set up the initial reactive value
+    orthoInputGenes <- reactiveVal()
+
+
+    # Load in example data when the link is clicked, and show a message.
+    observeEvent(input$orthoTryExample, {
+        orthoInputGenes(exampleData)
+
+        showNotification(
+            paste0("Successfully loaded example data! Click the 'Map' button to proceed."),
+            type = "message",
+            duration = 10
+        )
+    }, ignoreInit = TRUE, ignoreNULL = TRUE)
+
+
+    # Extract and clean input genes from the user
+    observeEvent(input$orthoPastedInput, {
         str_extract_all(input$orthoPastedInput, pattern = "PA(14|LES)?_?[0-9]{4,5}") %>%
-            map(~str_trim(.))
+            map(~str_trim(.)) %>%
+            orthoInputGenes()
     })
 
-    # Starting the mapping stuff
-    observeEvent(input$orthoSearch, {
 
+    # Convert to a data frame, and fix column name for easy joining later.
+    orthoGenesTable <- reactive({
+        req(orthoInputGenes(), input$strain1, input$strain2, input$orthoSearch)
+
+        part1 <- data.frame(Genes = orthoInputGenes(), stringsAsFactors = FALSE)
+        colnames(part1) <- paste0(input$strain1, " Locus Tag")
+
+        return(part1)
+    })
+
+    mappedOrthoGenes <- reactive({
+        req(orthoGenesTable())
         isolate(input$orthoSearch)
 
-        # Convert to a data frame, and fix column name for easy joining later.
-        orthoGenesTable <- reactive({
-            req(orthoInputGenes(), input$strain1, input$strain2)
+        mapOrthosGenerally(
+            orthoGenesTable(),
+            strain1 = input$strain1,
+            strain2 = input$strain2
+        )
+    })
 
-            part1 <- data.frame(Genes = orthoInputGenes(), stringsAsFactors = FALSE)
-            colnames(part1) <- paste0(input$strain1, " Locus Tag")
+    # Handle genes without orthologs
+    missingOrthoGenes <- reactive({
+        req(orthoGenesTable(), input$strain1, input$strain2)
 
-            return(part1)
-        })
+        anti_join(orthoGenesTable(), mappedOrthoGenes())
+    })
 
-        mappedOrthoGenes <- reactive({
-            req(orthoGenesTable())
-            isolate(input$orthoSearch)
+    # Summarize mapped genes
+    orthoNumGenes <- reactive({
+        list(
+            submitted = nrow(orthoGenesTable()),
+            matched = nrow(mappedOrthoGenes())
+        )
+    })
 
-            mapOrthosGenerally(
-                orthoGenesTable(),
-                strain1 = input$strain1,
-                strain2 = input$strain2
-            )
-        })
-
-        # Handle genes without orthologs
-        missingOrthoGenes <- reactive({
-            req(orthoGenesTable(), input$strain1, input$strain2)
-
-            anti_join(orthoGenesTable(), mappedOrthoGenes())
-        })
-
-        # Summarize mapped genes
-        orthoNumGenes <- reactive({
-            list(
-                submitted = nrow(orthoGenesTable()),
-                matched = nrow(mappedOrthoGenes())
-            )
-        })
-
+    # Output main result table
+    observeEvent(input$orthoSearch, {
         output$orthoResultPanel <- DT::renderDataTable({
             isolate(mappedOrthoGenes())
         }, options = list(searching = FALSE,
@@ -644,10 +702,11 @@ server <- function(input, output, session) {
                           dom = "t"),
         rownames = FALSE,
         selection = "none")
+    })
 
-        output$orthoResultSummary <- renderUI({
-            isolate(mappedOrthoGenes())
-
+    output$orthoResultSummary <- renderUI({
+        input$orthoSearch
+        isolate({
             tagList(
                 tags$br(),
                 tags$p(paste0(
@@ -656,21 +715,22 @@ server <- function(input, output, session) {
                 ))
             )
         })
+    })
 
-        output$orthoMissingGenesTable <- DT::renderDataTable({
-            isolate(missingOrthoGenes())
-        }, options = list(searching = FALSE,
-                          scrollX = "100%",
-                          scrollY = "500px",
-                          scrollCollapse = TRUE,
-                          paging = FALSE,
-                          dom = "t"),
-        rownames = FALSE,
-        selection = "none")
+    output$orthoMissingGenesTable <- DT::renderDataTable({
+        isolate(missingOrthoGenes())
+    }, options = list(searching = FALSE,
+                      scrollX = "100%",
+                      scrollY = "500px",
+                      scrollCollapse = TRUE,
+                      paging = FALSE,
+                      dom = "t"),
+    rownames = FALSE,
+    selection = "none")
 
-        output$orthoMissingGenesPanel <- renderUI({
-            isolate(missingOrthoGenes())
-
+    output$orthoMissingGenesPanel <- renderUI({
+        input$orthoSearch
+        isolate({
             if (nrow(missingOrthoGenes()) == 0) {
                 return(NULL)
             } else {
@@ -683,21 +743,22 @@ server <- function(input, output, session) {
                 ))
             }
         })
+    })
 
-        # Download button for mapped orthologs
-        output$mappedOrtho_dl <- downloadHandler(
-            filename = function() {
-                paste0(input$strain1, "to", input$strain2, "_orthologs.txt")
-            },
-            content = function(file) {
-                write_delim(mappedOrthoGenes(), file, delim = "\t")
-            }
-        )
+    # Download button for mapped orthologs
+    output$mappedOrtho_dl <- downloadHandler(
+        filename = function() {
+            paste0(input$strain1, "to", input$strain2, "_orthologs.txt")
+        },
+        content = function(file) {
+            write_delim(mappedOrthoGenes(), file, delim = "\t")
+        }
+    )
 
-        # Render the download button when there's something to save
-        output$mappedOrtho_btn <- renderUI({
-            isolate(mappedOrthoGenes())
-
+    # Render the download button when there's something to save
+    output$mappedOrtho_btn <- renderUI({
+        input$orthoSearch
+        isolate({
             if (nrow(mappedOrthoGenes()) != 0) {
                 tagList(
                     tags$hr(),
@@ -711,7 +772,7 @@ server <- function(input, output, session) {
                 )
             }
         })
-    }) # Closing the `observeEvent()` for Ortholog Mapping
+    })
 }
 
 
