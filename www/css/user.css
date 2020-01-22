@@ -1,18 +1,14 @@
 
-/* Make non-bulleted lists able to be indented, specifically for About page */
-dl dd {
-  margin-left: 1em;
+/* Change padding around sidebar panels */
+.col-sm-4 {
+  padding-right: 15px;
+  padding-left: 0;
 }
 
+/* Removing some padding from around containers */
 .container-fluid {
   padding-left: 0;
   padding-right: 0;
-}
-
-/* Custom class to add border to sidebarPanels */
-.well {
-  position: relative;
-  border: 1px solid #98aeb3;
 }
 
 /* Add border around jumbotron elements */
@@ -20,6 +16,12 @@ dl dd {
   border: 1px solid #98aeb3;
   padding-top: 0;
   padding-bottom: 24px;
+}
+
+/* Custom class to add border to sidebarPanels */
+.well {
+  position: relative;
+  border: 1px solid #98aeb3;
 }
 
 /* Remove margin for the tab header */
@@ -35,10 +37,6 @@ dl dd {
   margin-left: 0;
 }
 
-#nav ul {
-  padding-left: 0;
-}
-
 /* Adjust padding for elements of the navbar */
 .navbar,
 .tab-content {
@@ -46,8 +44,27 @@ dl dd {
   padding-right: 15px;
 }
 
-/* Change padding around sidebar panels */
-.col-sm-4 {
-  padding-right: 15px;
+/* Remove some excess padding from the navbar */
+#nav ul {
   padding-left: 0;
+}
+
+/* Make non-bulleted lists able to be indented, specifically for About page */
+dl dd {
+  margin-left: 1em;
+}
+
+ /* Adding light alert dialog */
+.alert-light {
+  color: #2c3e50;
+  background-color: #ecf0f1;
+  border-color: #ecf0f1;
+}
+
+.alert-light hr {
+  border-top-color: #2c3e50;
+}
+
+.alert-light .alert-link {
+  color: #2c3e50;
 }
