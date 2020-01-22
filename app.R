@@ -10,6 +10,7 @@ source("global.R")
 
 # Useful colours which match the flatly theme:
 # Dark blue     #2c3e50
+# Light grey    #ecf0f1
 # Grey          #75818c
 # Turquoise     #18bc9c
 # Light blue    #3498db
@@ -394,8 +395,8 @@ server <- function(input, output, session) {
             selector = "#annoPanelSidebar",
             where = "beforeEnd",
             ui = tags$div(
-                id = "exampleSuccessAlert",
-                class = "alert alert-dissmissible alert-success",
+                id = "annoExampleAlert",
+                class = "alert alert-dissmissible alert-info",
                 tags$button(
                     HTML("&times;"),
                     type = "button",
@@ -419,7 +420,7 @@ server <- function(input, output, session) {
 
     # Convert to a data frame, and fix column name for easy joining later.
     annoInputGenesTable <- reactive({
-        req(annoInputGenes(), input$annoSearch)
+        req(annoInputGenes())
         part1 <- data.frame(Genes = annoInputGenes(), stringsAsFactors = FALSE)
         colnames(part1) <- "Locus Tag"
         return(part1)
@@ -474,6 +475,7 @@ server <- function(input, output, session) {
         rownames = FALSE,
         selection = "none"
         )
+        removeUI("#annoExampleAlert")
     })
 
     # Print some text describing the number of matched/submitted genes.
@@ -659,7 +661,8 @@ server <- function(input, output, session) {
             selector = "#orthoPanelSidebar",
             where = "beforeEnd",
             ui = tags$div(
-                class = "alert alert-dissmissible alert-success",
+                id = "orthoExampleAlert",
+                class = "alert alert-dissmissible alert-info",
                 tags$button(
                     HTML("&times;"),
                     type = "button",
@@ -728,6 +731,7 @@ server <- function(input, output, session) {
                           dom = "t"),
         rownames = FALSE,
         selection = "none")
+        removeUI("#orthoExampleAlert")
     })
 
     output$orthoResultSummary <- renderUI({
