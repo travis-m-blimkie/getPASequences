@@ -21,7 +21,8 @@ source("global.R")
 # Define the UI elements --------------------------------------------------
 
 ui <- fluidPage(
-    theme = shinytheme("flatly"),
+    # theme = shinytheme("flatly"),
+    theme = "shinyflatlybootstrap.css",
 
     # Head linking to custom CSS tweaks
     tags$head(
@@ -86,8 +87,8 @@ ui <- fluidPage(
                         actionButton(
                             "annoTabBtn",
                             "Get Annotations & Sequences",
-                            class = "btn btn-primary btn-lg",
-                            style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50;"
+                            class = "btn btn-primary btn-lg"
+                            # style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50;"
                         ),
 
                         HTML("&nbsp;&nbsp;&nbsp;"),
@@ -95,8 +96,8 @@ ui <- fluidPage(
                         actionButton(
                             "orthoTabBtn",
                             "Perform Ortholog Mapping",
-                            class = "btn btn-primary btn-lg",
-                            style = "color: #fff; background-color: #75818c; border-color: #75818c;"
+                            class = "btn btn-primary btn-lg"
+                            # style = "color: #fff; background-color: #75818c; border-color: #75818c;"
                         )
                     )
                 )
