@@ -13,15 +13,13 @@
 
 /* Add border around jumbotron elements */
 .jumbotron {
-  border: 1px solid #98aeb3;
-  padding-top: 0;
+  padding-top: 24px;
   padding-bottom: 24px;
 }
 
 /* Custom class to add border to sidebarPanels */
 .well {
   position: relative;
-  border: 1px solid #98aeb3;
 }
 
 /* Remove margin for the tab header */
