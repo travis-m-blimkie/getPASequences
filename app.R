@@ -87,7 +87,7 @@ ui <- fluidPage(
                         actionButton(
                             "annoTabBtn",
                             "Get Annotations & Sequences",
-                            class = "btn btn-primary btn-lg"
+                            class = "btn btn-default btn-lg"
                             # style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50;"
                         ),
 
@@ -96,7 +96,7 @@ ui <- fluidPage(
                         actionButton(
                             "orthoTabBtn",
                             "Perform Ortholog Mapping",
-                            class = "btn btn-primary btn-lg"
+                            class = "btn btn-default btn-lg"
                             # style = "color: #fff; background-color: #75818c; border-color: #75818c;"
                         )
                     )
@@ -119,13 +119,22 @@ ui <- fluidPage(
                 ### SIDEBAR PANEL ###
                 tags$form(
                     class = "well",
+                    style = "padding-top: 0",
 
-                    tags$p(HTML(
-                        "<b>NOTE:</b> Non-matching IDs are returned in a ",
-                        "separate table. IDs must still be in the proper ",
-                        "format (e.g. PA0000 for strain PAO1) to be recognized ",
-                        "and parsed correctly."
-                    )),
+                    tags$h3("Upload Your Genes"),
+
+                    tags$p(
+                        "Here you can upload your genes as locus tags to ",
+                        "search for annotations. You may also use the link ",
+                        "below to try our example data."
+                    ),
+
+                    tags$p(
+                        "Note that IDs must be in the proper format (e.g. ",
+                        "PA0000 for strain PAO1) to be recognized and parsed ",
+                        "correctly. Non-matching IDs are returned in a ",
+                        "separate table. "
+                    ),
 
                     tags$br(),
 
@@ -165,17 +174,12 @@ ui <- fluidPage(
                     ),
 
                     tags$br(),
-                    tags$br(),
+                    tags$br()
+                ),
 
-                    # Download button for annotation table, to be created with
-                    # `renderUI()`.
-                    uiOutput("annoResultTableBtn"),
-
-
-                    # Download button for nucleotide and amino acid sequences, hidden
-                    # until data is available.
-                    uiOutput("annoSeqsBtn")
-                )
+                # Output for all the download buttons (annos, protein, and
+                # nucleotide sequences
+                uiOutput("annoBothBtns")
             ),
 
             ### MAIN PANEL ###
@@ -224,13 +228,14 @@ ui <- fluidPage(
                     tags$br(),
 
                     # Choose strain 1
-                    tags$div(style = "display: inline-block; vertical-align: top; width: 150px;",
-                             selectInput(
-                                 inputId = "strain1",
-                                 label = "Mapping from:",
-                                 choices = c(PAO1 = "PAO1", PA14 = "PA14", LESB58 = "LESB58"),
-                                 selected = "PAO1"
-                             )
+                    tags$div(
+                        style = "display: inline-block; vertical-align: top; width: 150px;",
+                        selectInput(
+                            inputId = "strain1",
+                            label = "Mapping from:",
+                            choices = c(PAO1 = "PAO1", PA14 = "PA14", LESB58 = "LESB58"),
+                            selected = "PAO1"
+                        )
                     ),
 
                     # Separator since we have both dropdowns on one "line"
@@ -241,13 +246,14 @@ ui <- fluidPage(
 
 
                     # Choose strain 2
-                    tags$div(style = "display: inline-block; vertical-align: top; width: 150px;",
-                             selectInput(
-                                 inputId = "strain2",
-                                 label = "Mappping to:",
-                                 choices = c(PAO1 = "PAO1", PA14 = "PA14", LESB58 = "LESB58"),
-                                 selected = "PA14"
-                             )
+                    tags$div(
+                        style = "display: inline-block; vertical-align: top; width: 150px;",
+                        selectInput(
+                            inputId = "strain2",
+                            label = "Mappping to:",
+                            choices = c(PAO1 = "PAO1", PA14 = "PA14", LESB58 = "LESB58"),
+                            selected = "PA14"
+                        )
                     ),
 
                     # Input area for genes
@@ -276,6 +282,7 @@ ui <- fluidPage(
                     tags$br(),
                     tags$br(),
 
+                    # Download button for ortholog results.
                     uiOutput("mappedOrtho_btn")
                 )
             ),
@@ -397,7 +404,7 @@ server <- function(input, output, session) {
             where = "beforeEnd",
             ui = tags$div(
                 id = "annoExampleAlert",
-                class = "alert alert-dissmissible alert-info",
+                class = "alert alert-dissmissible alert-success",
                 tags$button(
                     HTML("&times;"),
                     type = "button",
@@ -519,11 +526,13 @@ server <- function(input, output, session) {
                 return(NULL)
             } else {
                 return(tagList(
-                    tags$hr(),
-                    tags$h3("The following submitted genes had no matches:"),
-                    DT::dataTableOutput("annoMissingGenesTable"),
-                    tags$br(),
-                    tags$br()
+                    tags$div(tags$h3("The following submitted genes had no matches:")),
+                    tags$div(
+                        class = "col-sm-4 manual-sidebar",
+                        DT::dataTableOutput("annoMissingGenesTable"),
+                        tags$br(),
+                        tags$br()
+                    )
                 ))
             }
         })
@@ -540,31 +549,6 @@ server <- function(input, output, session) {
             write_delim(annoDisplayTable(), file, delim = "\t")
         }
     )
-
-    # Rendering the download button once displayTable() is populated with
-    # data (see above chunk).
-    output$annoResultTableBtn <- renderUI({
-        input$annoSearch
-        isolate({
-            if(nrow(annoDisplayTable()) != 0) {
-                tagList(
-                    tags$hr(),
-                    tags$p(
-                        "Download the annotation table as a tab delimited-file, ",
-                        "or the nucleotide or amino acid sequences in multi-",
-                        "fasta format."
-                    ),
-                    downloadButton(
-                        "annoResultTable_dl",
-                        tags$b("Annotations"),
-                        style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 200px" # #337ab7
-                    ),
-                    tags$br(),
-                    tags$br()
-                )
-            }
-        })
-    })
 
 
     # Here we set up the handlers for downloading sequence information.
@@ -615,30 +599,47 @@ server <- function(input, output, session) {
     )
 
 
-    # Now render both sequence download buttons simultaneously, along with
-    # some specific styling via `tagList()`.
-    output$annoSeqsBtn <- renderUI({
+    # This chunk renders the UI for all the download buttons. This way, all the
+    # buttons are in a single form/well, which only displays when data is ready
+    # to download.
+    output$annoBothBtns <- renderUI({
         input$annoSearch
         isolate({
             if (nrow(annoDisplayTable()) != 0) {
                 tagList(
-                    downloadButton(
-                        "annoNTSeqs_dl",
-                        tags$b("Nucleotide Sequences"),
-                        style = "width: 200px; background-color: #75818c; border-color: #75818c"
-                    ),
+                    tags$form(
+                        class = "well",
+                        tags$p(
+                            "Download the annotation table as a tab delimited-file, ",
+                            "or the nucleotide or amino acid sequences in multi-",
+                            "fasta format."
+                        ),
+                        downloadButton(
+                            "annoResultTable_dl",
+                            tags$b("Annotations"),
+                            style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 200px" # #337ab7
+                        ),
+                        tags$br(),
+                        tags$br(),
 
-                    # Divider so both sequence download buttons render on the
-                    # same line, with a small separation between them.
-                    tags$div(
-                        style = "display: inline-block; vertical-align: top; width: 10px;",
-                        HTML("<br>")
-                    ),
+                        downloadButton(
+                            "annoNTSeqs_dl",
+                            tags$b("Nucleotide Sequences"),
+                            style = "width: 200px; background-color: #75818c; border-color: #75818c"
+                        ),
 
-                    downloadButton(
-                        "annoAASeqs_dl",
-                        tags$b("Protein Sequences"),
-                        style = "width: 200px; background-color: #75818c; border-color: #75818c"
+                        # Divider so both sequence download buttons render on the
+                        # same line, with a small separation between them.
+                        tags$div(
+                            style = "display: inline-block; vertical-align: top; width: 10px;",
+                            HTML("<br>")
+                        ),
+
+                        downloadButton(
+                            "annoAASeqs_dl",
+                            tags$b("Protein Sequences"),
+                            style = "width: 200px; background-color: #75818c; border-color: #75818c"
+                        )
                     )
                 )
             }
@@ -663,7 +664,7 @@ server <- function(input, output, session) {
             where = "beforeEnd",
             ui = tags$div(
                 id = "orthoExampleAlert",
-                class = "alert alert-dissmissible alert-info",
+                class = "alert alert-dissmissible alert-success",
                 tags$button(
                     HTML("&times;"),
                     type = "button",
