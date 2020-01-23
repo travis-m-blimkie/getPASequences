@@ -291,6 +291,8 @@ ui <- fluidPage(
                         style = "font-size: 110%"
                     ),
 
+                    # Main search button which triggers display of results and
+                    # potential alerts
                     actionButton(
                         "orthoSearch",
                         tags$b("Map"),
@@ -341,13 +343,11 @@ ui <- fluidPage(
                        tags$a(href = "https://github.com/travis-m-blimkie/getPASequences", "Github page"),
                        " under the MIT license."
                 ),
-
                 tags$p(
                     "The data used by this app for annotations and sequences comes from the ",
                     tags$a(href = "https://pseudomonas.com", "Pseudomonas Genome Database"),
                     ", version 18.1."
                 ),
-
                 tags$p(
                     "Ortholog information was obtained from ",
                     tags$a(href = "http://pseudoluge.pseudomonas.com/", "OrtholugeDB"),
@@ -361,18 +361,14 @@ ui <- fluidPage(
                 # List of requisite packages, and scaling the font size slightly.
                 tags$dl(
                     style = "font-size: 1.25em",
-
                     tags$dt(tags$a(href = "https://shiny.rstudio.com/", "Shiny")),
                     tags$dd("Framework for app construction."),
-
                     # ShinyJS
                     tags$dt(tags$a(href = "https://deanattali.com/shinyjs/", "ShinyJS")),
                     tags$dd("Additional app functionality."),
-
                     # tidyverse
                     tags$dt(tags$a(href = "https://www.tidyverse.org/", "The tidyverse")),
                     tags$dd("Data manipulation functions, as well as reading and writing data."),
-
                     # seqinr
                     tags$dt(tags$a(href = "https://cran.r-project.org/package=seqinr", "seqinr")),
                     tags$dd("Writing output fasta files.")
@@ -421,6 +417,7 @@ server <- function(input, output, session) {
     observeEvent(input$annoTryExample, {
         annoInputGenes(exampleData)
 
+        # Success alert to inform the user the example data has been loaded
         insertUI(
             selector = "#annoPanelSidebar",
             where = "beforeEnd",
@@ -567,6 +564,7 @@ server <- function(input, output, session) {
     # This chunk renders the results only if there are non-matching genes
     # (see above chunk). As before, we are being explicit with our use of DT
     # functions beacuse of potential overlap with `shiny` functions.
+    # We also have a warning for the user if some genes did not have a match
     output$annoMissingGenesPanel <- renderUI({
         input$annoSearch
         isolate({
@@ -857,7 +855,8 @@ server <- function(input, output, session) {
     })
 
 
-    # Render the table for genes without orthologs
+    # Render the table for genes without orthologs, warning if some genes did
+    # not have ortholgos
     output$orthoMissingGenesPanel <- renderUI({
         input$orthoSearch
         isolate({
