@@ -15,13 +15,17 @@ source("global.R")
 # Turquoise     #18bc9c
 # Light blue    #3498db
 # DT blue       #0075b0
-# White         #fff
+# White         #ffffff
 
 
 # Define the UI elements --------------------------------------------------
 
 ui <- fluidPage(
-    # theme = shinytheme("flatly"),
+
+    # This CSS file is equivalent to using `shinytheme("flatly")`, with some
+    # tweaks made. By using a local version of the same theme, we can more
+    # easily make global tweaks to the app, without inserting as much CSS into
+    # this file.
     theme = "shinyflatlybootstrap.css",
 
     # Head linking to custom CSS tweaks
@@ -56,6 +60,7 @@ ui <- fluidPage(
             title = div(HTML("Home")),
             tags$div(
                 class = "jumbotron",
+
                 h1("Welcome"),
 
                 tags$hr(),
@@ -96,7 +101,7 @@ ui <- fluidPage(
                         actionButton(
                             "orthoTabBtn",
                             "Perform Ortholog Mapping",
-                            class = "btn btn-default btn-lg"
+                            class = "btn btn-default btn-lg",
                             # style = "color: #fff; background-color: #75818c; border-color: #75818c;"
                         )
                     )
@@ -111,7 +116,9 @@ ui <- fluidPage(
             value = "annoTab",
             "Annotations and Sequences",
 
-            # Custome sidebarLayout
+            # Custome sidebarLayout. We are building this as a div so it can be
+            # assigned an ID, which is needed for the alert rendered when the
+            # example data is loaded.
             tags$div(
                 class = "col-sm-4 manual-sidebar",
                 id = "annoPanelSidebar",
@@ -152,7 +159,7 @@ ui <- fluidPage(
                         inputId = "annoPastedInput",
                         label = "Paste your list of locus tags, one per line:",
                         placeholder = "Your genes here...",
-                        height = "300px"
+                        height = "200px"
                     ),
 
 
@@ -178,7 +185,9 @@ ui <- fluidPage(
                 ),
 
                 # Output for all the download buttons (annos, protein, and
-                # nucleotide sequences
+                # nucleotide sequences. It goes inside the main div for the
+                # sidebar, but outside the well which contains inputs (above),
+                # so is rendered as a separate well/box.
                 uiOutput("annoBothBtns")
             ),
 
@@ -218,11 +227,21 @@ ui <- fluidPage(
 
                 tags$form(
                     class = "well",
+                    style = "padding-top: 0",
+
+                    tags$h3("Upload Your Genes"),
 
                     tags$p(
-                        "Please select the strains for which you wish to ",
-                        "retreive orthologs. Note that IDs must be in the ",
-                        "proper format to be recognized and parsed correctly."
+                      "Paste your genes (one per line) into the box below, then ",
+                      "select the strains for which you wish to retrieve ",
+                      "orthologs. Additionally you may click the link below ",
+                      "to load some example genes."
+                    ),
+
+                    tags$p(
+                        "Please note that IDs must be in the proper format ",
+                        "(e.g. PA14_12345 for strain PA14) to be recognized ",
+                        "and parsed correctly."
                     ),
 
                     tags$br(),
@@ -261,7 +280,7 @@ ui <- fluidPage(
                         "orthoPastedInput",
                         "Paste your list of locus tags, one per line:",
                         placeholder = "Your genes here...",
-                        height = "300px"
+                        height = "200px"
                     ),
 
 
@@ -280,11 +299,12 @@ ui <- fluidPage(
                     ),
 
                     tags$br(),
-                    tags$br(),
+                    tags$br()
+                ),
 
-                    # Download button for ortholog results.
-                    uiOutput("mappedOrtho_btn")
-                )
+                # Download button for ortholog results. Same method applied here
+                # as for the annotation tab.
+                uiOutput("mappedOrtho_btn")
             ),
 
             ### Main Panel ###
@@ -338,8 +358,10 @@ ui <- fluidPage(
 
                 tags$p("This app uses the following R packages:"),
 
+                # List of requisite packages, and scaling the font size slightly.
                 tags$dl(
-                    # Shiny
+                    style = "font-size: 1.25em",
+
                     tags$dt(tags$a(href = "https://shiny.rstudio.com/", "Shiny")),
                     tags$dd("Framework for app construction."),
 
@@ -599,9 +621,9 @@ server <- function(input, output, session) {
     )
 
 
-    # This chunk renders the UI for all the download buttons. This way, all the
-    # buttons are in a single form/well, which only displays when data is ready
-    # to download.
+    # This chunk renders the UI for all three download buttons. This way, all
+    # the buttons are in a single form/well, which only displays when data is
+    # ready to download.
     output$annoBothBtns <- renderUI({
         input$annoSearch
         isolate({
@@ -617,7 +639,7 @@ server <- function(input, output, session) {
                         downloadButton(
                             "annoResultTable_dl",
                             tags$b("Annotations"),
-                            style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 200px" # #337ab7
+                            style = "color: #fff; background-color: #3498db; border-color: #3498db; width: 200px"
                         ),
                         tags$br(),
                         tags$br(),
@@ -695,6 +717,7 @@ server <- function(input, output, session) {
         return(part1)
     })
 
+    # Map the genes between strains using previously defined function.
     mappedOrthoGenes <- reactive({
         req(orthoGenesTable())
         isolate(input$orthoSearch)
@@ -736,6 +759,7 @@ server <- function(input, output, session) {
         removeUI("#orthoExampleAlert")
     })
 
+    # Render summary of how many input genes mapped successfully.
     output$orthoResultSummary <- renderUI({
         input$orthoSearch
         isolate({
@@ -749,6 +773,8 @@ server <- function(input, output, session) {
         })
     })
 
+    # Create the table containing the missing genes (those without orthologs),
+    # if present.
     output$orthoMissingGenesTable <- DT::renderDataTable({
         isolate(missingOrthoGenes())
     }, options = list(searching = FALSE,
@@ -760,6 +786,7 @@ server <- function(input, output, session) {
     rownames = FALSE,
     selection = "none")
 
+    # Render the table for genes without orthologs
     output$orthoMissingGenesPanel <- renderUI({
         input$orthoSearch
         isolate({
@@ -767,11 +794,15 @@ server <- function(input, output, session) {
                 return(NULL)
             } else {
                 return(tagList(
-                    tags$hr(),
-                    tags$h3("The following submitted genes had no orthologs:"),
-                    DT::dataTableOutput("orthoMissingGenesTable"),
-                    tags$br(),
-                    tags$br()
+                    tags$div(
+                        tags$h3("The following submitted genes had no orthologs:")
+                    ),
+                    tags$div(
+                        class = "col-sm-4 manual-sidebar",
+                        DT::dataTableOutput("orthoMissingGenesTable"),
+                        tags$br(),
+                        tags$br()
+                    )
                 ))
             }
         })
@@ -792,13 +823,13 @@ server <- function(input, output, session) {
         input$orthoSearch
         isolate({
             if (nrow(mappedOrthoGenes()) != 0) {
-                tagList(
-                    tags$hr(),
+                tags$form(
+                    class = "well",
                     tags$p("Download your orthologs as a tab-delimted file:"),
                     downloadButton(
                         "mappedOrtho_dl",
                         tags$b("Download Orthologs"),
-                        style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50"
+                        style = "color: #fff; background-color: #3498db; border-color: #3498db"
                     ),
                     tags$br()
                 )
