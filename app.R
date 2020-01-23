@@ -92,8 +92,8 @@ ui <- fluidPage(
                         actionButton(
                             "annoTabBtn",
                             "Get Annotations & Sequences",
-                            class = "btn btn-default btn-lg"
-                            # style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50;"
+                            class = "btn btn-default btn-lg",
+                            style = "color: #fff; background-color: #3498db; border-color: #3498db;"
                         ),
 
                         HTML("&nbsp;&nbsp;&nbsp;"),
@@ -102,7 +102,7 @@ ui <- fluidPage(
                             "orthoTabBtn",
                             "Perform Ortholog Mapping",
                             class = "btn btn-default btn-lg",
-                            # style = "color: #fff; background-color: #75818c; border-color: #75818c;"
+                            style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c;"
                         )
                     )
                 )
@@ -490,6 +490,30 @@ server <- function(input, output, session) {
     })
 
 
+    # Provide an error message if no genes were extracted from the users input
+    observeEvent(input$annoSearch, {
+        if (nrow(annoDisplayTable()) == 0 & nrow(annoNoMatchGenes()) == 0) {
+            insertUI(
+                selector = "#annoPanelSidebar",
+                where = "beforeEnd",
+                ui = tags$div(
+                    id = "annoFailAlert",
+                    class = "alert alert-dissmissible alert-danger",
+                    tags$button(
+                        HTML("&times;"),
+                        type = "button",
+                        class = "close",
+                        `data-dismiss` = "alert"
+                    ),
+                    tags$b("ERROR: No matches were found for your genes. ",
+                    "Please check your inputs and ensure they are in the ",
+                    "correct format.")
+                )
+            )
+        }
+    })
+
+
     # Create and render the table of results; prevent updating the results
     # table when input IDs are changed until the search button is pressed
     # again. As before, we are being explicit with our use of DT functions.
@@ -505,6 +529,8 @@ server <- function(input, output, session) {
         rownames = FALSE,
         selection = "none"
         )
+
+        # Remove example alert, if present
         removeUI("#annoExampleAlert")
     })
 
@@ -547,15 +573,35 @@ server <- function(input, output, session) {
             if (nrow(annoNoMatchGenes()) == 0) {
                 return(NULL)
             } else {
-                return(tagList(
-                    tags$div(tags$h3("The following submitted genes had no matches:")),
-                    tags$div(
-                        class = "col-sm-4 manual-sidebar",
-                        DT::dataTableOutput("annoMissingGenesTable"),
-                        tags$br(),
-                        tags$br()
+                insertUI(
+                    selector = "#annoPanelSidebar",
+                    where = "beforeEnd",
+                    ui = tags$div(
+                        id = "annoNomatchWarning",
+                        class = "alert alert-dissmissible alert-warning",
+                        tags$button(
+                            HTML("&times;"),
+                            type = "button",
+                            class = "close",
+                            `data-dismiss` = "alert"
+                        ),
+                        tags$b("WARNING: Some genes did not have a match. ",
+                        "Check the table to see which genes did not have ",
+                        "annotations.")
                     )
-                ))
+                )
+                return(
+                    tagList(
+                        tags$hr(),
+                        tags$div(tags$h3("The following submitted genes had no matches:")),
+                        tags$div(
+                            class = "col-sm-4 manual-sidebar",
+                            DT::dataTableOutput("annoMissingGenesTable"),
+                            tags$br(),
+                            tags$br()
+                        )
+                    )
+                )
             }
         })
     })
@@ -786,6 +832,31 @@ server <- function(input, output, session) {
     rownames = FALSE,
     selection = "none")
 
+
+    # Provide an error message if no genes were extracted from the users input
+    observeEvent(input$orthoSearch, {
+        if (nrow(mappedOrthoGenes()) == 0 & nrow(missingOrthoGenes()) == 0) {
+            insertUI(
+                selector = "#orthoPanelSidebar",
+                where = "beforeEnd",
+                ui = tags$div(
+                    id = "orthoFailAlert",
+                    class = "alert alert-dissmissible alert-danger",
+                    tags$button(
+                        HTML("&times;"),
+                        type = "button",
+                        class = "close",
+                        `data-dismiss` = "alert"
+                    ),
+                    tags$b("ERROR: No matches were found for your genes. ",
+                           "Please check your inputs and ensure they are in the ",
+                           "correct format.")
+                )
+            )
+        }
+    })
+
+
     # Render the table for genes without orthologs
     output$orthoMissingGenesPanel <- renderUI({
         input$orthoSearch
@@ -793,6 +864,23 @@ server <- function(input, output, session) {
             if (nrow(missingOrthoGenes()) == 0) {
                 return(NULL)
             } else {
+                insertUI(
+                    selector = "#orthoPanelSidebar",
+                    where = "beforeEnd",
+                    ui = tags$div(
+                        id = "orthoMissingAlert",
+                        class = "alert alert-dissmissible alert-warning",
+                        tags$button(
+                            HTML("&times;"),
+                            type = "button",
+                            class = "close",
+                            `data-dismiss` = "alert"
+                        ),
+                        tags$b("WARNING: No orthologs were found for some of ",
+                               "your genes. Please check the table to see ",
+                               "which genes did not have a match.")
+                    )
+                )
                 return(tagList(
                     tags$div(
                         tags$h3("The following submitted genes had no orthologs:")
