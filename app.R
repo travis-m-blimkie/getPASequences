@@ -106,6 +106,16 @@ ui <- fluidPage(
                         )
                     )
                 )
+            ),
+
+            # Separate div to include the lab logo below the main section. Also made
+            # into a clickable link!
+            tags$div(
+                style = "position:fixed; bottom:0px; padding-bottom: 10px",
+                # style = "padding-top: 5vw; padding-bottom: 10px; padding-right: 10px",
+                htmltools::HTML(
+                    "<a href='http://cmdr.ubc.ca/bobh/'> <img src = 'hancock-lab-logo.svg'> </a>"
+                )
             )
         ),
 
@@ -341,17 +351,13 @@ ui <- fluidPage(
 
                 tags$p("Source code for this app is available at the ",
                        tags$a(href = "https://github.com/travis-m-blimkie/getPASequences", "Github page"),
-                       " under the MIT license."
-                ),
-                tags$p(
-                    "The data used by this app for annotations and sequences comes from the ",
-                    tags$a(href = "https://pseudomonas.com", "Pseudomonas Genome Database"),
-                    ", version 18.1."
-                ),
-                tags$p(
-                    "Ortholog information was obtained from ",
-                    tags$a(href = "http://pseudoluge.pseudomonas.com/", "OrtholugeDB"),
-                    ", version 1.0."
+                       " under the MIT license.",
+                       "The data used by this app for annotations and sequences comes from the ",
+                       tags$a(href = "https://pseudomonas.com", "Pseudomonas Genome Database"),
+                       ", version 18.1.",
+                       "Ortholog information was obtained from ",
+                       tags$a(href = "http://pseudoluge.pseudomonas.com/", "OrtholugeDB"),
+                       ", version 1.0."
                 ),
 
                 tags$br(),
@@ -372,6 +378,16 @@ ui <- fluidPage(
                     # seqinr
                     tags$dt(tags$a(href = "https://cran.r-project.org/package=seqinr", "seqinr")),
                     tags$dd("Writing output fasta files.")
+                )
+            ),
+
+            # Separate div to include the lab logo below the main section. Also made
+            # into a clickable link!
+            tags$div(
+                style = "position:fixed; bottom:0px; padding-bottom: 10px",
+                # style = "padding-top: 5vw; padding-bottom: 10px; padding-right: 10px",
+                htmltools::HTML(
+                    "<a href='http://cmdr.ubc.ca/bobh/'> <img src = 'hancock-lab-logo.svg'> </a>"
                 )
             )
         )
@@ -881,6 +897,7 @@ server <- function(input, output, session) {
                     )
                 )
                 return(tagList(
+                    tags$hr(),
                     tags$div(
                         tags$h3("The following submitted genes had no orthologs:")
                     ),
