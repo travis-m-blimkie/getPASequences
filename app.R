@@ -9,17 +9,24 @@ library(shiny)
 source("global.R")
 
 # Useful colours which match the flatly theme:
-# Dark blue   #2c3e50
-# Turquoise   #18bc9c
-# Light blue  #3498db
-# DT blue     #0075b0
-# White       #fff
+# Dark blue     #2c3e50
+# Light grey    #ecf0f1
+# Grey          #75818c
+# Turquoise     #18bc9c
+# Light blue    #3498db
+# DT blue       #0075b0
+# White         #ffffff
 
 
 # Define the UI elements --------------------------------------------------
 
 ui <- fluidPage(
-    theme = shinytheme("flatly"),
+
+    # This CSS file is equivalent to using `shinytheme("flatly")`, with some
+    # tweaks made. By using a local version of the same theme, we can more
+    # easily make global tweaks to the app, without inserting as much CSS into
+    # this file.
+    theme = "shinyflatlybootstrap.css",
 
     # Head linking to custom CSS tweaks
     tags$head(
@@ -53,6 +60,7 @@ ui <- fluidPage(
             title = div(HTML("Home")),
             tags$div(
                 class = "jumbotron",
+
                 h1("Welcome"),
 
                 tags$hr(),
@@ -84,7 +92,7 @@ ui <- fluidPage(
                         actionButton(
                             "annoTabBtn",
                             "Get Annotations & Sequences",
-                            class = "btn btn-primary btn-lg",
+                            class = "btn btn-default btn-lg",
                             style = "color: #fff; background-color: #3498db; border-color: #3498db;"
                         ),
 
@@ -93,10 +101,20 @@ ui <- fluidPage(
                         actionButton(
                             "orthoTabBtn",
                             "Perform Ortholog Mapping",
-                            class = "btn btn-primary btn-lg",
-                            style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50;"
+                            class = "btn btn-default btn-lg",
+                            style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c;"
                         )
                     )
+                )
+            ),
+
+            # Separate div to include the lab logo below the main section. Also made
+            # into a clickable link!
+            tags$div(
+                style = "position:fixed; bottom:0px; padding-bottom: 10px",
+                # style = "padding-top: 5vw; padding-bottom: 10px; padding-right: 10px",
+                htmltools::HTML(
+                    "<a href='http://cmdr.ubc.ca/bobh/'> <img src = 'hancock-lab-logo.svg'> </a>"
                 )
             )
         ),
@@ -108,18 +126,32 @@ ui <- fluidPage(
             value = "annoTab",
             "Annotations and Sequences",
 
-            sidebarLayout(
+            # Custome sidebarLayout. We are building this as a div so it can be
+            # assigned an ID, which is needed for the alert rendered when the
+            # example data is loaded.
+            tags$div(
+                class = "col-sm-4 manual-sidebar",
+                id = "annoPanelSidebar",
 
                 ### SIDEBAR PANEL ###
-                sidebarPanel(tags$form(
+                tags$form(
                     class = "well",
+                    style = "padding-top: 0",
 
-                    tags$p(HTML(
-                        "<b>NOTE:</b> Non-matching IDs are returned in a ",
-                        "separate table. IDs must still be in the proper ",
-                        "format (e.g. PA0000 for strain PAO1) to be recognized ",
-                        "and parsed correctly."
-                    )),
+                    tags$h3("Upload Your Genes"),
+
+                    tags$p(
+                        "Here you can upload your genes as locus tags to ",
+                        "search for annotations. You may also use the link ",
+                        "below to try our example data."
+                    ),
+
+                    tags$p(
+                        "Note that IDs must be in the proper format (e.g. ",
+                        "PA0000 for strain PAO1) to be recognized and parsed ",
+                        "correctly. Non-matching IDs are returned in a ",
+                        "separate table. "
+                    ),
 
                     tags$br(),
 
@@ -137,7 +169,7 @@ ui <- fluidPage(
                         inputId = "annoPastedInput",
                         label = "Paste your list of locus tags, one per line:",
                         placeholder = "Your genes here...",
-                        height = "300px"
+                        height = "200px"
                     ),
 
 
@@ -145,7 +177,7 @@ ui <- fluidPage(
                     actionLink(
                         inputId = "annoTryExample",
                         label = tags$b("Try Example Data"),
-                        style = "font-size: 110%"
+                        style = "font-size: 110%;"
                     ),
 
 
@@ -158,41 +190,37 @@ ui <- fluidPage(
                         style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px; float: right;"
                     ),
 
-                    tags$div(HTML("<br>")),
-                    tags$div(HTML("<br>")),
-
-                    # Download button for annotation table, to be created with
-                    # `renderUI()`.
-                    uiOutput("annoResultTableBtn"),
-
-
-                    # Download button for nucleotide and amino acid sequences, hidden
-                    # until data is available.
-                    uiOutput("annoSeqsBtn"),
-
-                    tags$hr()
-                )),
-
-                ### MAIN PANEL ###
-                mainPanel(
-
-                    # Render panel for the matched results/annotations (showing
-                    # `displayTable()`). NOTE that we want use the DT functions
-                    # when rendering output tables. There are `shiny` versions
-                    # of the same functions, and although DT is loaded later, we
-                    # want to be explicit just in case.
-                    h3("Your results will be displayed below:"),
                     tags$br(),
-                    DT::dataTableOutput("annoDisplayTable"),
+                    tags$br()
+                ),
 
-                    uiOutput(outputId = "annoResultSummary"),
+                # Output for all the download buttons (annos, protein, and
+                # nucleotide sequences. It goes inside the main div for the
+                # sidebar, but outside the well which contains inputs (above),
+                # so is rendered as a separate well/box.
+                uiOutput("annoBothBtns")
+            ),
 
-                    # Output for the non-matching genes. Using `uiOutput()` here
-                    # so that it only displays if there are non-matching genes
-                    # (i.e. the table which holds said genes has more than 0
-                    # rows).
-                    uiOutput("annoMissingGenesPanel")
-                )
+            ### MAIN PANEL ###
+            tags$div(
+                class = "col-sm-8",
+
+                # Render panel for the matched results/annotations (showing
+                # `displayTable()`). NOTE that we want use the DT functions
+                # when rendering output tables. There are `shiny` versions
+                # of the same functions, and although DT is loaded later, we
+                # want to be explicit just in case.
+                h3("Your results will be displayed below:"),
+                tags$br(),
+                DT::dataTableOutput("annoDisplayTable"),
+
+                uiOutput(outputId = "annoResultSummary"),
+
+                # Output for the non-matching genes. Using `uiOutput()` here
+                # so that it only displays if there are non-matching genes
+                # (i.e. the table which holds said genes has more than 0
+                # rows).
+                uiOutput("annoMissingGenesPanel")
             )
         ),
 
@@ -203,21 +231,34 @@ ui <- fluidPage(
             value = "orthoTab",
             title = "Ortholog Mapping",
 
-            sidebarLayout(
+            tags$div(
+                class = "col-sm-4 manual-sidebar",
+                id = "orthoPanelSidebar",
 
-                sidebarPanel(tags$form(
+                tags$form(
                     class = "well",
+                    style = "padding-top: 0",
+
+                    tags$h3("Upload Your Genes"),
 
                     tags$p(
-                        "Please select the strains for which you wish to ",
-                        "retreive orthologs. Note that IDs must be in the ",
-                        "proper format to be recognized and parsed correctly."
+                      "Paste your genes (one per line) into the box below, then ",
+                      "select the strains for which you wish to retrieve ",
+                      "orthologs. Additionally you may click the link below ",
+                      "to load some example genes."
+                    ),
+
+                    tags$p(
+                        "Please note that IDs must be in the proper format ",
+                        "(e.g. PA14_12345 for strain PA14) to be recognized ",
+                        "and parsed correctly."
                     ),
 
                     tags$br(),
 
                     # Choose strain 1
-                    tags$div(style = "display: inline-block; vertical-align: top; width: 150px;",
+                    tags$div(
+                        style = "display: inline-block; vertical-align: top; width: 150px;",
                         selectInput(
                             inputId = "strain1",
                             label = "Mapping from:",
@@ -234,7 +275,8 @@ ui <- fluidPage(
 
 
                     # Choose strain 2
-                    tags$div(style = "display: inline-block; vertical-align: top; width: 150px;",
+                    tags$div(
+                        style = "display: inline-block; vertical-align: top; width: 150px;",
                         selectInput(
                             inputId = "strain2",
                             label = "Mappping to:",
@@ -248,7 +290,7 @@ ui <- fluidPage(
                         "orthoPastedInput",
                         "Paste your list of locus tags, one per line:",
                         placeholder = "Your genes here...",
-                        height = "300px"
+                        height = "200px"
                     ),
 
 
@@ -259,6 +301,8 @@ ui <- fluidPage(
                         style = "font-size: 110%"
                     ),
 
+                    # Main search button which triggers display of results and
+                    # potential alerts
                     actionButton(
                         "orthoSearch",
                         tags$b("Map"),
@@ -266,24 +310,28 @@ ui <- fluidPage(
                         style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px; float: right;"
                     ),
 
-                    tags$div(HTML("<br>")),
-                    tags$div(HTML("<br>")),
-
-                    uiOutput("mappedOrtho_btn")
-                )),
-
-                ### Main Panel ###
-                mainPanel(
-                    tags$h3("Your results will be displayed below:"),
                     tags$br(),
-                    DT::dataTableOutput("orthoResultPanel"),
+                    tags$br()
+                ),
 
-                    # Summary of number of mapped genes
-                    uiOutput("orthoResultSummary"),
+                # Download button for ortholog results. Same method applied here
+                # as for the annotation tab.
+                uiOutput("mappedOrtho_btn")
+            ),
 
-                    # Show missing genes if present
-                    uiOutput("orthoMissingGenesPanel")
-                )
+            ### Main Panel ###
+            tags$div(
+                class = "col-sm-8",
+
+                tags$h3("Your results will be displayed below:"),
+                tags$br(),
+                DT::dataTableOutput("orthoResultPanel"),
+
+                # Summary of number of mapped genes
+                uiOutput("orthoResultSummary"),
+
+                # Show missing genes if present
+                uiOutput("orthoMissingGenesPanel")
             )
         ),
 
@@ -303,41 +351,43 @@ ui <- fluidPage(
 
                 tags$p("Source code for this app is available at the ",
                        tags$a(href = "https://github.com/travis-m-blimkie/getPASequences", "Github page"),
-                       " under the MIT license."
-                ),
-
-                tags$p(
-                    "The data used by this app for annotations and sequences comes from the ",
-                    tags$a(href = "https://pseudomonas.com", "Pseudomonas Genome Database"),
-                    ", version 18.1."
-                ),
-
-                tags$p(
-                    "Ortholog information was obtained from ",
-                    tags$a(href = "http://pseudoluge.pseudomonas.com/", "OrtholugeDB"),
-                    ", version 1.0."
+                       " under the MIT license.",
+                       "The data used by this app for annotations and sequences comes from the ",
+                       tags$a(href = "https://pseudomonas.com", "Pseudomonas Genome Database"),
+                       ", version 18.1.",
+                       "Ortholog information was obtained from ",
+                       tags$a(href = "http://pseudoluge.pseudomonas.com/", "OrtholugeDB"),
+                       ", version 1.0."
                 ),
 
                 tags$br(),
 
                 tags$p("This app uses the following R packages:"),
 
+                # List of requisite packages, and scaling the font size slightly.
                 tags$dl(
-                    # Shiny
+                    style = "font-size: 1.25em",
                     tags$dt(tags$a(href = "https://shiny.rstudio.com/", "Shiny")),
                     tags$dd("Framework for app construction."),
-
                     # ShinyJS
                     tags$dt(tags$a(href = "https://deanattali.com/shinyjs/", "ShinyJS")),
                     tags$dd("Additional app functionality."),
-
                     # tidyverse
                     tags$dt(tags$a(href = "https://www.tidyverse.org/", "The tidyverse")),
                     tags$dd("Data manipulation functions, as well as reading and writing data."),
-
                     # seqinr
                     tags$dt(tags$a(href = "https://cran.r-project.org/package=seqinr", "seqinr")),
                     tags$dd("Writing output fasta files.")
+                )
+            ),
+
+            # Separate div to include the lab logo below the main section. Also made
+            # into a clickable link!
+            tags$div(
+                style = "position:fixed; bottom:0px; padding-bottom: 10px",
+                # style = "padding-top: 5vw; padding-bottom: 10px; padding-right: 10px",
+                htmltools::HTML(
+                    "<a href='http://cmdr.ubc.ca/bobh/'> <img src = 'hancock-lab-logo.svg'> </a>"
                 )
             )
         )
@@ -383,10 +433,21 @@ server <- function(input, output, session) {
     observeEvent(input$annoTryExample, {
         annoInputGenes(exampleData)
 
-        showNotification(
-            paste0("Successfully loaded example data! Click the 'Search' button to proceed."),
-            type = "message",
-            duration = 10
+        # Success alert to inform the user the example data has been loaded
+        insertUI(
+            selector = "#annoPanelSidebar",
+            where = "beforeEnd",
+            ui = tags$div(
+                id = "annoExampleAlert",
+                class = "alert alert-dissmissible alert-success",
+                tags$button(
+                    HTML("&times;"),
+                    type = "button",
+                    class = "close",
+                    `data-dismiss` = "alert"
+                ),
+                tags$b("Example data successfully loaded. Click the 'Search' button to continue.")
+            )
         )
     }, ignoreInit = TRUE, ignoreNULL = TRUE)
 
@@ -402,7 +463,7 @@ server <- function(input, output, session) {
 
     # Convert to a data frame, and fix column name for easy joining later.
     annoInputGenesTable <- reactive({
-        req(annoInputGenes(), input$annoSearch)
+        req(annoInputGenes())
         part1 <- data.frame(Genes = annoInputGenes(), stringsAsFactors = FALSE)
         colnames(part1) <- "Locus Tag"
         return(part1)
@@ -442,6 +503,30 @@ server <- function(input, output, session) {
     })
 
 
+    # Provide an error message if no genes were extracted from the users input
+    observeEvent(input$annoSearch, {
+        if (nrow(annoDisplayTable()) == 0 & nrow(annoNoMatchGenes()) == 0) {
+            insertUI(
+                selector = "#annoPanelSidebar",
+                where = "beforeEnd",
+                ui = tags$div(
+                    id = "annoFailAlert",
+                    class = "alert alert-dissmissible alert-danger",
+                    tags$button(
+                        HTML("&times;"),
+                        type = "button",
+                        class = "close",
+                        `data-dismiss` = "alert"
+                    ),
+                    tags$b("ERROR: No matches were found for your genes. ",
+                    "Please check your inputs and ensure they are in the ",
+                    "correct format.")
+                )
+            )
+        }
+    })
+
+
     # Create and render the table of results; prevent updating the results
     # table when input IDs are changed until the search button is pressed
     # again. As before, we are being explicit with our use of DT functions.
@@ -457,6 +542,9 @@ server <- function(input, output, session) {
         rownames = FALSE,
         selection = "none"
         )
+
+        # Remove example alert, if present
+        removeUI("#annoExampleAlert")
     })
 
     # Print some text describing the number of matched/submitted genes.
@@ -492,19 +580,42 @@ server <- function(input, output, session) {
     # This chunk renders the results only if there are non-matching genes
     # (see above chunk). As before, we are being explicit with our use of DT
     # functions beacuse of potential overlap with `shiny` functions.
+    # We also have a warning for the user if some genes did not have a match
     output$annoMissingGenesPanel <- renderUI({
         input$annoSearch
         isolate({
             if (nrow(annoNoMatchGenes()) == 0) {
                 return(NULL)
             } else {
-                return(tagList(
-                    tags$hr(),
-                    tags$h3("The following submitted genes had no matches:"),
-                    DT::dataTableOutput("annoMissingGenesTable"),
-                    tags$br(),
-                    tags$br()
-                ))
+                insertUI(
+                    selector = "#annoPanelSidebar",
+                    where = "beforeEnd",
+                    ui = tags$div(
+                        id = "annoNomatchWarning",
+                        class = "alert alert-dissmissible alert-warning",
+                        tags$button(
+                            HTML("&times;"),
+                            type = "button",
+                            class = "close",
+                            `data-dismiss` = "alert"
+                        ),
+                        tags$b("WARNING: Some genes did not have a match. ",
+                        "Check the table to see which genes did not have ",
+                        "annotations.")
+                    )
+                )
+                return(
+                    tagList(
+                        tags$hr(),
+                        tags$div(tags$h3("The following submitted genes had no matches:")),
+                        tags$div(
+                            class = "col-sm-4 manual-sidebar",
+                            DT::dataTableOutput("annoMissingGenesTable"),
+                            tags$br(),
+                            tags$br()
+                        )
+                    )
+                )
             }
         })
     })
@@ -520,31 +631,6 @@ server <- function(input, output, session) {
             write_delim(annoDisplayTable(), file, delim = "\t")
         }
     )
-
-    # Rendering the download button once displayTable() is populated with
-    # data (see above chunk).
-    output$annoResultTableBtn <- renderUI({
-        input$annoSearch
-        isolate({
-            if(nrow(annoDisplayTable()) != 0) {
-                tagList(
-                    # tags$hr(),
-                    tags$p(
-                        "Download the annotation table as a tab delimited-file, ",
-                        "or the nucleotide or amino acid sequences in multi-",
-                        "fasta format."
-                    ),
-                    downloadButton(
-                        "annoResultTable_dl",
-                        tags$b("Annotations"),
-                        style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c; width: 200px" # #337ab7
-                    ),
-                    tags$br(),
-                    tags$br()
-                )
-            }
-        })
-    })
 
 
     # Here we set up the handlers for downloading sequence information.
@@ -595,30 +681,47 @@ server <- function(input, output, session) {
     )
 
 
-    # Now render both sequence download buttons simultaneously, along with
-    # some specific styling via `tagList()`.
-    output$annoSeqsBtn <- renderUI({
+    # This chunk renders the UI for all three download buttons. This way, all
+    # the buttons are in a single form/well, which only displays when data is
+    # ready to download.
+    output$annoBothBtns <- renderUI({
         input$annoSearch
         isolate({
             if (nrow(annoDisplayTable()) != 0) {
                 tagList(
-                    downloadButton(
-                        "annoNTSeqs_dl",
-                        tags$b("Nucleotide Sequences"),
-                        style = "width: 200px; background-color: #337ab7; border-color: #337ab7"
-                    ),
+                    tags$form(
+                        class = "well",
+                        tags$p(
+                            "Download the annotation table as a tab delimited-file, ",
+                            "or the nucleotide or amino acid sequences in multi-",
+                            "fasta format."
+                        ),
+                        downloadButton(
+                            "annoResultTable_dl",
+                            tags$b("Annotations"),
+                            style = "color: #fff; background-color: #3498db; border-color: #3498db; width: 200px"
+                        ),
+                        tags$br(),
+                        tags$br(),
 
-                    # Divider so both sequence download buttons render on the
-                    # same line, with a small separation between them.
-                    tags$div(
-                        style = "display: inline-block; vertical-align: top; width: 10px;",
-                        HTML("<br>")
-                    ),
+                        downloadButton(
+                            "annoNTSeqs_dl",
+                            tags$b("Nucleotide Sequences"),
+                            style = "width: 200px; background-color: #75818c; border-color: #75818c"
+                        ),
 
-                    downloadButton(
-                        "annoAASeqs_dl",
-                        tags$b("Protein Sequences"),
-                        style = "width: 200px; background-color: #337ab7; border-color: #337ab7"
+                        # Divider so both sequence download buttons render on the
+                        # same line, with a small separation between them.
+                        tags$div(
+                            style = "display: inline-block; vertical-align: top; width: 10px;",
+                            HTML("<br>")
+                        ),
+
+                        downloadButton(
+                            "annoAASeqs_dl",
+                            tags$b("Protein Sequences"),
+                            style = "width: 200px; background-color: #75818c; border-color: #75818c"
+                        )
                     )
                 )
             }
@@ -638,10 +741,20 @@ server <- function(input, output, session) {
     observeEvent(input$orthoTryExample, {
         orthoInputGenes(exampleData)
 
-        showNotification(
-            paste0("Successfully loaded example data! Click the 'Map' button to proceed."),
-            type = "message",
-            duration = 10
+        insertUI(
+            selector = "#orthoPanelSidebar",
+            where = "beforeEnd",
+            ui = tags$div(
+                id = "orthoExampleAlert",
+                class = "alert alert-dissmissible alert-success",
+                tags$button(
+                    HTML("&times;"),
+                    type = "button",
+                    class = "close",
+                    `data-dismiss` = "alert"
+                ),
+                tags$b("Example data successfully loaded. Click the 'Map' button to continue.")
+            )
         )
     }, ignoreInit = TRUE, ignoreNULL = TRUE)
 
@@ -664,6 +777,7 @@ server <- function(input, output, session) {
         return(part1)
     })
 
+    # Map the genes between strains using previously defined function.
     mappedOrthoGenes <- reactive({
         req(orthoGenesTable())
         isolate(input$orthoSearch)
@@ -702,8 +816,10 @@ server <- function(input, output, session) {
                           dom = "t"),
         rownames = FALSE,
         selection = "none")
+        removeUI("#orthoExampleAlert")
     })
 
+    # Render summary of how many input genes mapped successfully.
     output$orthoResultSummary <- renderUI({
         input$orthoSearch
         isolate({
@@ -717,6 +833,8 @@ server <- function(input, output, session) {
         })
     })
 
+    # Create the table containing the missing genes (those without orthologs),
+    # if present.
     output$orthoMissingGenesTable <- DT::renderDataTable({
         isolate(missingOrthoGenes())
     }, options = list(searching = FALSE,
@@ -728,18 +846,67 @@ server <- function(input, output, session) {
     rownames = FALSE,
     selection = "none")
 
+
+    # Provide an error message if no genes were extracted from the users input
+    observeEvent(input$orthoSearch, {
+        if (nrow(mappedOrthoGenes()) == 0 & nrow(missingOrthoGenes()) == 0) {
+            insertUI(
+                selector = "#orthoPanelSidebar",
+                where = "beforeEnd",
+                ui = tags$div(
+                    id = "orthoFailAlert",
+                    class = "alert alert-dissmissible alert-danger",
+                    tags$button(
+                        HTML("&times;"),
+                        type = "button",
+                        class = "close",
+                        `data-dismiss` = "alert"
+                    ),
+                    tags$b("ERROR: No matches were found for your genes. ",
+                           "Please check your inputs and ensure they are in the ",
+                           "correct format.")
+                )
+            )
+        }
+    })
+
+
+    # Render the table for genes without orthologs, warning if some genes did
+    # not have ortholgos
     output$orthoMissingGenesPanel <- renderUI({
         input$orthoSearch
         isolate({
             if (nrow(missingOrthoGenes()) == 0) {
                 return(NULL)
             } else {
+                insertUI(
+                    selector = "#orthoPanelSidebar",
+                    where = "beforeEnd",
+                    ui = tags$div(
+                        id = "orthoMissingAlert",
+                        class = "alert alert-dissmissible alert-warning",
+                        tags$button(
+                            HTML("&times;"),
+                            type = "button",
+                            class = "close",
+                            `data-dismiss` = "alert"
+                        ),
+                        tags$b("WARNING: No orthologs were found for some of ",
+                               "your genes. Please check the table to see ",
+                               "which genes did not have a match.")
+                    )
+                )
                 return(tagList(
                     tags$hr(),
-                    tags$h3("The following submitted genes had no orthologs:"),
-                    DT::dataTableOutput("orthoMissingGenesTable"),
-                    tags$br(),
-                    tags$br()
+                    tags$div(
+                        tags$h3("The following submitted genes had no orthologs:")
+                    ),
+                    tags$div(
+                        class = "col-sm-4 manual-sidebar",
+                        DT::dataTableOutput("orthoMissingGenesTable"),
+                        tags$br(),
+                        tags$br()
+                    )
                 ))
             }
         })
@@ -760,13 +927,13 @@ server <- function(input, output, session) {
         input$orthoSearch
         isolate({
             if (nrow(mappedOrthoGenes()) != 0) {
-                tagList(
-                    tags$hr(),
+                tags$form(
+                    class = "well",
                     tags$p("Download your orthologs as a tab-delimted file:"),
                     downloadButton(
                         "mappedOrtho_dl",
                         tags$b("Download Orthologs"),
-                        style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c"
+                        style = "color: #fff; background-color: #3498db; border-color: #3498db"
                     ),
                     tags$br()
                 )
