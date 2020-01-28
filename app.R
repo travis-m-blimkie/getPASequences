@@ -421,12 +421,14 @@ server <- function(input, output, session) {
     }, ignoreInit = TRUE)
 
 
+    # Reactive value which will hold either user input data or example data
+    annoInputGenes <- reactiveVal()
+    orthoInputGenes <- reactiveVal()
+
+
     ####################
     ## Annotation Tab ##
     ####################
-
-    # Reactive value which will hold either user input data or example data
-    annoInputGenes <- reactiveVal()
 
 
     # Load example data if the link is clicked and provide a message
@@ -691,11 +693,16 @@ server <- function(input, output, session) {
                 tagList(
                     tags$form(
                         class = "well",
-                        tags$p(
+                        tags$p(HTML(paste0(
                             "Download the annotation table as a tab delimited-file, ",
                             "or the nucleotide or amino acid sequences in multi-",
-                            "fasta format."
-                        ),
+                            "fasta format. Or click ",
+                            actionLink(
+                                inputId = "switchToOrthos",
+                                label = "here"
+                            ),
+                            " to retrieve orthologs for your input genes."
+                        ))),
                         downloadButton(
                             "annoResultTable_dl",
                             tags$b("Annotations"),
@@ -728,13 +735,41 @@ server <- function(input, output, session) {
         })
     })
 
+    # Allow the user to take their input genes from the annotation tab and go
+    # straight to the ortholog tab
+    observeEvent(input$switchToOrthos, {
+
+        updateNavbarPage(session, inputId = "navBarLayout", selected = "orthoTab")
+
+        orthoInputGenes(annoInputGenes())
+
+        updateSelectInput(
+            session = session,
+            inputId = "strain1",
+            selected = input$annoStrainChoice
+        )
+
+        insertUI(
+            selector = "#orthoPanelSidebar",
+            where = "beforeEnd",
+            ui = tags$div(
+                id = "switchedFromAnnos",
+                class = "alert alert-dissmissible alert-info",
+                tags$button(
+                    HTML("&times;"),
+                    type = "button",
+                    class = "close",
+                    `data-dismiss` = "alert"
+                ),
+                tags$b("Loaded previous data. Select a second strain, then click 'Map'.")
+            )
+        )
+    }, ignoreInit = TRUE)
+
 
     ##################
     ## Ortholog Tab ##
     ##################
-
-    # Set up the initial reactive value
-    orthoInputGenes <- reactiveVal()
 
 
     # Load in example data when the link is clicked, and show a message.
