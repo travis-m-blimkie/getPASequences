@@ -903,7 +903,24 @@ server <- function(input, output, session) {
             if (nrow(mappedOrthoGenes()) != 0) {
                 tags$form(
                     class = "well",
-                    tags$p("Download your orthologs as a tab-delimted file:"),
+
+                    tags$p(HTML(paste0(
+                        "Download your orthologs as a tab-delimted file, ",
+                        "or click one of these links to obtain annotations ",
+                        "and/or sequences for either strain used in mapping ",
+                        "othologs: ",
+                        actionLink(
+                            inputId = "switchAnnoStrain1",
+                            label = input$strain1
+                        ),
+                        " or ",
+                        actionLink(
+                            inputId = "switchAnnoStrain2",
+                            label = past0(input$strain2, ".")
+                        )
+                    ))),
+
+
                     downloadButton(
                         "mappedOrtho_dl",
                         tags$b("Download Orthologs"),
