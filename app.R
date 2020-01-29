@@ -6,7 +6,7 @@ library(shiny)
 # This file contains code to read data files and defines the annotation and
 # ortholog mapping functions used in the app. It also loads a bunch of
 # libraries, to keep this clean.
-source("global.R")
+import::from("global.R", retrieveAnnotations, mapOrthosGenerally, insertAlert)
 
 # Useful colours which match the flatly theme:
 # Dark blue     #2c3e50
@@ -436,20 +436,12 @@ server <- function(input, output, session) {
         annoInputGenes(exampleData)
 
         # Success alert to inform the user the example data has been loaded
-        insertUI(
-            selector = "#annoPanelSidebar",
-            where = "beforeEnd",
-            ui = tags$div(
-                id = "annoExampleAlert",
-                class = "alert alert-dissmissible alert-success",
-                tags$button(
-                    HTML("&times;"),
-                    type = "button",
-                    class = "close",
-                    `data-dismiss` = "alert"
-                ),
-                tags$b("Example data successfully loaded. Click the 'Search' button to continue.")
-            )
+        insertAlert(
+            location = "#annoPanelSidebar",
+            ID = "annoExampleAlert",
+            type = "success",
+            content = paste0("Example data successfully loaded. Click the ",
+                             "'Search' button to continue.")
         )
     }, ignoreInit = TRUE, ignoreNULL = TRUE)
 
@@ -508,22 +500,13 @@ server <- function(input, output, session) {
     # Provide an error message if no genes were extracted from the users input
     observeEvent(input$annoSearch, {
         if (nrow(annoDisplayTable()) == 0 & nrow(annoNoMatchGenes()) == 0) {
-            insertUI(
-                selector = "#annoPanelSidebar",
-                where = "beforeEnd",
-                ui = tags$div(
-                    id = "annoFailAlert",
-                    class = "alert alert-dissmissible alert-danger",
-                    tags$button(
-                        HTML("&times;"),
-                        type = "button",
-                        class = "close",
-                        `data-dismiss` = "alert"
-                    ),
-                    tags$b("ERROR: No matches were found for your genes. ",
-                    "Please check your inputs and ensure they are in the ",
-                    "correct format.")
-                )
+            insertAlert(
+                location = "#annoPanelSidebar",
+                ID = "annoFailAlert",
+                type = "danger",
+                content = paste0("ERROR: No matches were found for your genes. ",
+                                 "Please check your inputs and ensure they are ",
+                                 "in the correct format.")
             )
         }
     })
@@ -589,22 +572,13 @@ server <- function(input, output, session) {
             if (nrow(annoNoMatchGenes()) == 0) {
                 return(NULL)
             } else {
-                insertUI(
-                    selector = "#annoPanelSidebar",
-                    where = "beforeEnd",
-                    ui = tags$div(
-                        id = "annoNomatchWarning",
-                        class = "alert alert-dissmissible alert-warning",
-                        tags$button(
-                            HTML("&times;"),
-                            type = "button",
-                            class = "close",
-                            `data-dismiss` = "alert"
-                        ),
-                        tags$b("WARNING: Some genes did not have a match. ",
-                        "Check the table to see which genes did not have ",
-                        "annotations.")
-                    )
+                insertAlert(
+                    location = "#annoPanelSidebar",
+                    ID = "annoNomatchWarning",
+                    type = "warning",
+                    content = paste0("WARNING: Some genes did not have a match. ",
+                                     "Check the table to see which genes did ",
+                                     "not have annotations.")
                 )
                 return(
                     tagList(
@@ -749,20 +723,12 @@ server <- function(input, output, session) {
             selected = input$annoStrainChoice
         )
 
-        insertUI(
-            selector = "#orthoPanelSidebar",
-            where = "beforeEnd",
-            ui = tags$div(
-                id = "switchedFromAnnos",
-                class = "alert alert-dissmissible alert-info",
-                tags$button(
-                    HTML("&times;"),
-                    type = "button",
-                    class = "close",
-                    `data-dismiss` = "alert"
-                ),
-                tags$b("Loaded previous data. Select a second strain, then click 'Map'.")
-            )
+        insertAlert(
+            location = "#orthoPanelSidebar",
+            ID = "switchedFromAnnos",
+            type = "info",
+            content = paste0("Successfully loaded previous data. Select a ",
+            "second strain, then click the 'Map' button to proceed.")
         )
     }, ignoreInit = TRUE)
 
@@ -776,20 +742,11 @@ server <- function(input, output, session) {
     observeEvent(input$orthoTryExample, {
         orthoInputGenes(exampleData)
 
-        insertUI(
-            selector = "#orthoPanelSidebar",
-            where = "beforeEnd",
-            ui = tags$div(
-                id = "orthoExampleAlert",
-                class = "alert alert-dissmissible alert-success",
-                tags$button(
-                    HTML("&times;"),
-                    type = "button",
-                    class = "close",
-                    `data-dismiss` = "alert"
-                ),
-                tags$b("Example data successfully loaded. Click the 'Map' button to continue.")
-            )
+        insertAlert(
+            location = "#orthoPanelSidebar",
+            ID = "orthoExampleAlert",
+            type = "success",
+            content = "Example data successfully loaded. Click the 'Map' button to continue."
         )
     }, ignoreInit = TRUE, ignoreNULL = TRUE)
 
@@ -885,22 +842,13 @@ server <- function(input, output, session) {
     # Provide an error message if no genes were extracted from the users input
     observeEvent(input$orthoSearch, {
         if (nrow(mappedOrthoGenes()) == 0 & nrow(missingOrthoGenes()) == 0) {
-            insertUI(
-                selector = "#orthoPanelSidebar",
-                where = "beforeEnd",
-                ui = tags$div(
-                    id = "orthoFailAlert",
-                    class = "alert alert-dissmissible alert-danger",
-                    tags$button(
-                        HTML("&times;"),
-                        type = "button",
-                        class = "close",
-                        `data-dismiss` = "alert"
-                    ),
-                    tags$b("ERROR: No matches were found for your genes. ",
-                           "Please check your inputs and ensure they are in the ",
-                           "correct format.")
-                )
+            insertAlert(
+                location = "#orthoPanelSidebar",
+                ID = "orthoFailAlert",
+                type = "danger",
+                content = paste0("ERROR: No matches were found for your genes. ",
+                                 "Please check your inputs and ensure they are ",
+                                 "in the correct format.")
             )
         }
     })
@@ -914,23 +862,16 @@ server <- function(input, output, session) {
             if (nrow(missingOrthoGenes()) == 0) {
                 return(NULL)
             } else {
-                insertUI(
-                    selector = "#orthoPanelSidebar",
-                    where = "beforeEnd",
-                    ui = tags$div(
-                        id = "orthoMissingAlert",
-                        class = "alert alert-dissmissible alert-warning",
-                        tags$button(
-                            HTML("&times;"),
-                            type = "button",
-                            class = "close",
-                            `data-dismiss` = "alert"
-                        ),
-                        tags$b("WARNING: No orthologs were found for some of ",
-                               "your genes. Please check the table to see ",
-                               "which genes did not have a match.")
-                    )
+
+                insertAlert(
+                    location = "#orthoPanelSidebar",
+                    ID = "orthoMissingAlert",
+                    type = "warning",
+                    content = paste0("WARNING: No orthologs were found for some ",
+                                     "of your genes. Please check the table to ",
+                                     "see which genes did not have a match.")
                 )
+
                 return(tagList(
                     tags$hr(),
                     tags$div(

@@ -60,3 +60,24 @@ mapOrthosGenerally <- function(inputDF, strain1, strain2) {
     return(NULL)
   }
 }
+
+
+# Function for creating alerts --------------------------------------------
+
+insertAlert <- function(location, ID, type, content) {
+  insertUI(
+    selector = location,
+    where = "beforeEnd",
+    ui = tags$div(
+      id = ID,
+      class = paste0("alert alert-dissmissible alert-", type),
+      tags$button(
+        HTML("&times;"),
+        type = "button",
+        class = "close",
+        `data-dismiss` = "alert"
+      ),
+      tags$b(content)
+    )
+  )
+}
