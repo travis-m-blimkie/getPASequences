@@ -1,12 +1,13 @@
 
-# Load libraries and data -------------------------------------------------
+# Load libraries, data, and functions -------------------------------------
 
 library(shiny)
 
-# This file contains code to read data files and defines the annotation and
-# ortholog mapping functions used in the app. It also loads a bunch of
-# libraries, to keep this clean.
-import::from("global.R", retrieveAnnotations, mapOrthosGenerally, insertAlert)
+# The file `global.R` loads a bunch of libraries and the data used by the app,
+# including the example data. `functions.R` as expected contains some functions
+# for the app.
+source("global.R")
+import::from("functions.R", retrieveAnnotations, mapOrthosGenerally, insertAlert)
 
 # Useful colours which match the flatly theme:
 # Dark blue     #2c3e50
@@ -420,7 +421,6 @@ server <- function(input, output, session) {
         updateNavbarPage(session, inputId = "navBarLayout", selected = "aboutTab")
     }, ignoreInit = TRUE)
 
-
     # Reactive value which will hold either user input data or example data
     annoInputGenes <- reactiveVal()
     orthoInputGenes <- reactiveVal()
@@ -429,7 +429,6 @@ server <- function(input, output, session) {
     ####################
     ## Annotation Tab ##
     ####################
-
 
     # Load example data if the link is clicked and provide a message
     observeEvent(input$annoTryExample, {
@@ -737,8 +736,7 @@ server <- function(input, output, session) {
     ## Ortholog Tab ##
     ##################
 
-
-    # Load in example data when the link is clicked, and show a message.
+    # Load in example data when the link is clicked, and show a message
     observeEvent(input$orthoTryExample, {
         orthoInputGenes(exampleData)
 
@@ -759,7 +757,7 @@ server <- function(input, output, session) {
     })
 
 
-    # Convert to a data frame, and fix column name for easy joining later.
+    # Convert to a data frame, and fix column name for easy joining later
     orthoGenesTable <- reactive({
         req(orthoInputGenes(), input$strain1, input$strain2, input$orthoSearch)
 
@@ -769,7 +767,7 @@ server <- function(input, output, session) {
         return(part1)
     })
 
-    # Map the genes between strains using previously defined function.
+    # Map the genes between strains using previously defined function
     mappedOrthoGenes <- reactive({
         req(orthoGenesTable())
         isolate(input$orthoSearch)
@@ -811,7 +809,7 @@ server <- function(input, output, session) {
         removeUI("#orthoExampleAlert")
     })
 
-    # Render summary of how many input genes mapped successfully.
+    # Render summary of how many input genes mapped successfully
     output$orthoResultSummary <- renderUI({
         input$orthoSearch
         isolate({
@@ -826,7 +824,7 @@ server <- function(input, output, session) {
     })
 
     # Create the table containing the missing genes (those without orthologs),
-    # if present.
+    # if present
     output$orthoMissingGenesTable <- DT::renderDataTable({
         isolate(missingOrthoGenes())
     }, options = list(searching = FALSE,
