@@ -729,7 +729,7 @@ server <- function(input, output, session) {
             content = paste0("Successfully loaded previous data. Select a ",
             "second strain, then click the 'Map' button to proceed.")
         )
-    }, ignoreInit = TRUE)
+    }, ignoreInit = TRUE, ignoreNULL = TRUE)
 
 
     ##################
@@ -916,7 +916,7 @@ server <- function(input, output, session) {
                         " or ",
                         actionLink(
                             inputId = "switchAnnoStrain2",
-                            label = past0(input$strain2, ".")
+                            label = paste0(input$strain2, ".")
                         )
                     ))),
 
@@ -931,6 +931,29 @@ server <- function(input, output, session) {
             }
         })
     })
+
+    # Allow the user to take their input or output genes from the ortholog tab
+    # and go straight to the annotation tab
+    observeEvent(input$switchAnnoStrain1, {
+
+        updateNavbarPage(session, inputId = "navBarLayout", selected = "annoTab")
+
+        annoInputGenes(orthoInputGenes())
+
+        updateSelectInput(
+            session = session,
+            inputId = "annoStrainChoice",
+            selected = input$strain1
+        )
+
+        insertAlert(
+            location = "#annoPanelSidebar",
+            ID = "switchedFromOrtho1",
+            type = "info",
+            content = paste0("Successfully loaded previous data. Click the ",
+            "'Search' button to proceed.")
+        )
+    }, ignoreInit = TRUE, ignoreNULL = TRUE)
 }
 
 
