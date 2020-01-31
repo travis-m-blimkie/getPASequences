@@ -367,7 +367,7 @@ ui <- fluidPage(
 
                 # List of requisite packages, and scaling the font size slightly.
                 tags$dl(
-                    style = "font-size: 1.25em",
+                    style = "font-size: 1.2em",
                     tags$dt(tags$a(href = "https://shiny.rstudio.com/", "Shiny")),
                     tags$dd("Framework for app construction."),
                     # ShinyJS
@@ -674,12 +674,12 @@ server <- function(input, output, session) {
                             tags$p(HTML(paste0(
                                 "Download the annotation table as a tab delimited-file, ",
                                 "or the nucleotide or amino acid sequences in multi-",
-                                "fasta format. Or click ",
+                                "fasta format. Or click <b>",
                                 actionLink(
                                     inputId = "switchToOrthos",
                                     label = "here"
                                 ),
-                                " to retrieve orthologs for your input genes."
+                                "</b> to retrieve orthologs for your input genes."
                             ))),
                             downloadButton(
                                 "annoResultTable_dl",
@@ -914,16 +914,16 @@ server <- function(input, output, session) {
                         "Download your orthologs as a tab-delimted file, ",
                         "or click one of these links to obtain annotations ",
                         "and/or sequences for either strain used in mapping ",
-                        "othologs: ",
+                        "othologs: <b>",
                         actionLink(
                             inputId = "switchAnnoStrain1",
                             label = input$strain1
                         ),
-                        " or ",
+                        "</b> or <b>",
                         actionLink(
                             inputId = "switchAnnoStrain2",
                             label = paste0(input$strain2, ".")
-                        )
+                        ), "</b>"
                     ))),
 
                     downloadButton(
