@@ -913,8 +913,8 @@ server <- function(input, output, session) {
                     tags$p(HTML(paste0(
                         "Download your orthologs as a tab-delimted file, ",
                         "or click one of these links to obtain annotations ",
-                        "and/or sequences for either strain used in mapping ",
-                        "othologs: <b>",
+                        "and/or sequences for either strain used in the ",
+                        "mapping:<br><b>",
                         actionLink(
                             inputId = "switchAnnoStrain1",
                             label = input$strain1
