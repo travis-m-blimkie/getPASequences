@@ -1,12 +1,15 @@
 
 #' retrieveAnnotations
 #'
-#' @param inputDF Data frame which contains input IDs
-#' @param strain Strain of P. aeruginosa to find annotations for
+#' @param inputDF Data frame which contains input IDs.
+#' @param strain Strain of P. aeruginosa to be used.
 #'
-#' @return Data frame of matched genes
+#' @return Data frame of matched genes.
 #'
 #' @export
+#'
+#' @description Used in the Annotation tab as the primary function for getting
+#'   annotations and sequences from the user's input.
 #'
 retrieveAnnotations <- function(inputDF, strain) {
 
@@ -29,13 +32,15 @@ retrieveAnnotations <- function(inputDF, strain) {
 
 #' mapOrthosGenerally
 #'
-#' @param inputDF Data frame containing input locus tags
-#' @param strain1 Starting strain, corresponding to the input locus tags
-#' @param strain2 Strain in which we wish to find orthologs
+#' @param inputDF Data frame containing input locus tags.
+#' @param strain1 Starting strain, corresponding to the input locus tags.
+#' @param strain2 Strain in which we wish to find orthologs.
 #'
-#' @return Data frame containing ortholog information
+#' @return Data frame containing ortholog information.
 #'
 #' @export
+#' @description Main function used in the Ortholog tab for retrieving orthologs
+#'   from the user's input genes.
 #'
 mapOrthosGenerally <- function(inputDF, strain1, strain2) {
 
@@ -59,13 +64,17 @@ mapOrthosGenerally <- function(inputDF, strain1, strain2) {
 #'
 #' @param location Name of UI element determining where the alert will be
 #'   inserted. Should begin with a "#".
-#' @param ID ID to be assigned to the alert
-#' @param type Type of alert; one of "success", "info", "warning", or "danger"
-#' @param content Text to be displayed in the alert
+#' @param ID ID to be assigned to the alert.
+#' @param type Type of alert; one of "success", "info", "warning", or "danger".
+#' @param content Text to be displayed in the alert.
 #'
 #' @return
 #'
 #' @export
+#'
+#' @description Inserts a UI alert element to inform the user of what's
+#'   happening, e.g. loading example data, or when some genes have no
+#'   annotations/orthologs.
 #'
 insertAlert <- function(location, ID, type, content) {
   insertUI(
