@@ -6,7 +6,7 @@ library(shiny)
 # The file `global.R` loads a bunch of libraries and the data used by the app,
 # including the example data. `functions.R` as expected contains some functions
 # for the app.
-source("global.R")
+source("global.R", local = TRUE)
 import::from("functions.R", retrieveAnnotations, mapOrthosGenerally, insertAlert)
 
 # Useful colours which match the flatly theme:
