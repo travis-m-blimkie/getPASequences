@@ -1,12 +1,13 @@
 
-# Load libraries and data -------------------------------------------------
+# Load libraries, data, and functions -------------------------------------
 
 library(shiny)
 
-# This file contains code to read data files and defines the annotation and
-# ortholog mapping functions used in the app. It also loads a bunch of
-# libraries, to keep this clean.
-source("global.R")
+# The file `global.R` loads a bunch of libraries and the data used by the app,
+# including the example data. `functions.R` as expected contains some functions
+# for the app.
+source("global.R", local = TRUE)
+import::from("functions.R", retrieveAnnotations, mapOrthosGenerally, insertAlert)
 
 # Useful colours which match the flatly theme:
 # Dark blue     #2c3e50
@@ -366,7 +367,7 @@ ui <- fluidPage(
 
                 # List of requisite packages, and scaling the font size slightly.
                 tags$dl(
-                    style = "font-size: 1.25em",
+                    style = "font-size: 1.2em",
                     tags$dt(tags$a(href = "https://shiny.rstudio.com/", "Shiny")),
                     tags$dd("Framework for app construction."),
                     # ShinyJS
@@ -420,34 +421,26 @@ server <- function(input, output, session) {
         updateNavbarPage(session, inputId = "navBarLayout", selected = "aboutTab")
     }, ignoreInit = TRUE)
 
+    # Reactive value which will hold either user input data or example data
+    annoInputGenes <- reactiveVal()
+    orthoInputGenes <- reactiveVal()
+
 
     ####################
     ## Annotation Tab ##
     ####################
-
-    # Reactive value which will hold either user input data or example data
-    annoInputGenes <- reactiveVal()
-
 
     # Load example data if the link is clicked and provide a message
     observeEvent(input$annoTryExample, {
         annoInputGenes(exampleData)
 
         # Success alert to inform the user the example data has been loaded
-        insertUI(
-            selector = "#annoPanelSidebar",
-            where = "beforeEnd",
-            ui = tags$div(
-                id = "annoExampleAlert",
-                class = "alert alert-dissmissible alert-success",
-                tags$button(
-                    HTML("&times;"),
-                    type = "button",
-                    class = "close",
-                    `data-dismiss` = "alert"
-                ),
-                tags$b("Example data successfully loaded. Click the 'Search' button to continue.")
-            )
+        insertAlert(
+            location = "#annoPanelSidebar",
+            ID = "annoExampleAlert",
+            type = "success",
+            content = paste0("Example data successfully loaded. Click the ",
+                             "'Search' button to continue.")
         )
     }, ignoreInit = TRUE, ignoreNULL = TRUE)
 
@@ -506,22 +499,13 @@ server <- function(input, output, session) {
     # Provide an error message if no genes were extracted from the users input
     observeEvent(input$annoSearch, {
         if (nrow(annoDisplayTable()) == 0 & nrow(annoNoMatchGenes()) == 0) {
-            insertUI(
-                selector = "#annoPanelSidebar",
-                where = "beforeEnd",
-                ui = tags$div(
-                    id = "annoFailAlert",
-                    class = "alert alert-dissmissible alert-danger",
-                    tags$button(
-                        HTML("&times;"),
-                        type = "button",
-                        class = "close",
-                        `data-dismiss` = "alert"
-                    ),
-                    tags$b("ERROR: No matches were found for your genes. ",
-                    "Please check your inputs and ensure they are in the ",
-                    "correct format.")
-                )
+            insertAlert(
+                location = "#annoPanelSidebar",
+                ID = "annoFailAlert",
+                type = "danger",
+                content = paste0("ERROR: No matches were found for your genes. ",
+                                 "Please check your inputs and ensure they are ",
+                                 "in the correct format.")
             )
         }
     })
@@ -548,16 +532,18 @@ server <- function(input, output, session) {
     })
 
     # Print some text describing the number of matched/submitted genes.
-    output$annoResultSummary <- renderUI({
-        input$annoSearch
-        isolate({
-            tagList(
-                tags$br(),
-                tags$p(paste0(
-                    "Matched ", annoNumGenes()$matched, " out of ",
-                    annoNumGenes()$submitted, " genes submitted."
-                ))
-            )
+    observeEvent(input$annoSearch, {
+        output$annoResultSummary <- renderUI({
+            input$annoSearch
+            isolate({
+                tagList(
+                    tags$br(),
+                    tags$p(paste0(
+                        "Matched ", annoNumGenes()$matched, " out of ",
+                        annoNumGenes()$submitted, " genes submitted."
+                    ))
+                )
+            })
         })
     })
 
@@ -581,42 +567,35 @@ server <- function(input, output, session) {
     # (see above chunk). As before, we are being explicit with our use of DT
     # functions beacuse of potential overlap with `shiny` functions.
     # We also have a warning for the user if some genes did not have a match
-    output$annoMissingGenesPanel <- renderUI({
-        input$annoSearch
-        isolate({
-            if (nrow(annoNoMatchGenes()) == 0) {
-                return(NULL)
-            } else {
-                insertUI(
-                    selector = "#annoPanelSidebar",
-                    where = "beforeEnd",
-                    ui = tags$div(
-                        id = "annoNomatchWarning",
-                        class = "alert alert-dissmissible alert-warning",
-                        tags$button(
-                            HTML("&times;"),
-                            type = "button",
-                            class = "close",
-                            `data-dismiss` = "alert"
-                        ),
-                        tags$b("WARNING: Some genes did not have a match. ",
-                        "Check the table to see which genes did not have ",
-                        "annotations.")
+    observeEvent(input$annoSearch, {
+        output$annoMissingGenesPanel <- renderUI({
+            input$annoSearch
+            isolate({
+                if (nrow(annoNoMatchGenes()) == 0) {
+                    return(NULL)
+                } else {
+                    insertAlert(
+                        location = "#annoPanelSidebar",
+                        ID = "annoNomatchWarning",
+                        type = "warning",
+                        content = paste0("WARNING: Some genes did not have a match. ",
+                                         "Check the table to see which genes did ",
+                                         "not have annotations.")
                     )
-                )
-                return(
-                    tagList(
-                        tags$hr(),
-                        tags$div(tags$h3("The following submitted genes had no matches:")),
-                        tags$div(
-                            class = "col-sm-4 manual-sidebar",
-                            DT::dataTableOutput("annoMissingGenesTable"),
-                            tags$br(),
-                            tags$br()
+                    return(
+                        tagList(
+                            tags$hr(),
+                            tags$div(tags$h3("The following submitted genes had no matches:")),
+                            tags$div(
+                                class = "col-sm-4 manual-sidebar",
+                                DT::dataTableOutput("annoMissingGenesTable"),
+                                tags$br(),
+                                tags$br()
+                            )
                         )
                     )
-                )
-            }
+                }
+            })
         })
     })
 
@@ -684,77 +663,94 @@ server <- function(input, output, session) {
     # This chunk renders the UI for all three download buttons. This way, all
     # the buttons are in a single form/well, which only displays when data is
     # ready to download.
-    output$annoBothBtns <- renderUI({
-        input$annoSearch
-        isolate({
-            if (nrow(annoDisplayTable()) != 0) {
-                tagList(
-                    tags$form(
-                        class = "well",
-                        tags$p(
-                            "Download the annotation table as a tab delimited-file, ",
-                            "or the nucleotide or amino acid sequences in multi-",
-                            "fasta format."
-                        ),
-                        downloadButton(
-                            "annoResultTable_dl",
-                            tags$b("Annotations"),
-                            style = "color: #fff; background-color: #3498db; border-color: #3498db; width: 200px"
-                        ),
-                        tags$br(),
-                        tags$br(),
+    observeEvent(input$annoSearch, {
+        output$annoBothBtns <- renderUI({
+            input$annoSearch
+            isolate({
+                if (nrow(annoDisplayTable()) != 0) {
+                    tagList(
+                        tags$form(
+                            class = "well",
+                            tags$p(HTML(paste0(
+                                "Download the annotation table as a tab delimited-file, ",
+                                "or the nucleotide or amino acid sequences in multi-",
+                                "fasta format. Or click <b>",
+                                actionLink(
+                                    inputId = "switchToOrthos",
+                                    label = "here"
+                                ),
+                                "</b> to retrieve orthologs for your input genes."
+                            ))),
+                            downloadButton(
+                                "annoResultTable_dl",
+                                tags$b("Annotations"),
+                                style = "color: #fff; background-color: #3498db; border-color: #3498db; width: 200px"
+                            ),
+                            tags$br(),
+                            tags$br(),
 
-                        downloadButton(
-                            "annoNTSeqs_dl",
-                            tags$b("Nucleotide Sequences"),
-                            style = "width: 200px; background-color: #75818c; border-color: #75818c"
-                        ),
+                            downloadButton(
+                                "annoNTSeqs_dl",
+                                tags$b("Nucleotide Sequences"),
+                                style = "width: 200px; background-color: #75818c; border-color: #75818c"
+                            ),
 
-                        # Divider so both sequence download buttons render on the
-                        # same line, with a small separation between them.
-                        tags$div(
-                            style = "display: inline-block; vertical-align: top; width: 10px;",
-                            HTML("<br>")
-                        ),
+                            # Divider so both sequence download buttons render on the
+                            # same line, with a small separation between them.
+                            tags$div(
+                                style = "display: inline-block; vertical-align: top; width: 10px;",
+                                HTML("<br>")
+                            ),
 
-                        downloadButton(
-                            "annoAASeqs_dl",
-                            tags$b("Protein Sequences"),
-                            style = "width: 200px; background-color: #75818c; border-color: #75818c"
+                            downloadButton(
+                                "annoAASeqs_dl",
+                                tags$b("Protein Sequences"),
+                                style = "width: 200px; background-color: #75818c; border-color: #75818c"
+                            )
                         )
                     )
-                )
-            }
+                }
+            })
         })
     })
+
+    # Allow the user to take their input genes from the annotation tab and go
+    # straight to the ortholog tab
+    observeEvent(input$switchToOrthos, {
+
+        updateNavbarPage(session, inputId = "navBarLayout", selected = "orthoTab")
+
+        orthoInputGenes(annoInputGenes())
+
+        updateSelectInput(
+            session = session,
+            inputId = "strain1",
+            selected = input$annoStrainChoice
+        )
+
+        insertAlert(
+            location = "#orthoPanelSidebar",
+            ID = "switchedFromAnnos",
+            type = "info",
+            content = paste0("Successfully loaded previous data. Select a ",
+            "second strain, then click the 'Map' button to proceed.")
+        )
+    }, ignoreInit = TRUE, ignoreNULL = TRUE)
 
 
     ##################
     ## Ortholog Tab ##
     ##################
 
-    # Set up the initial reactive value
-    orthoInputGenes <- reactiveVal()
-
-
-    # Load in example data when the link is clicked, and show a message.
+    # Load in example data when the link is clicked, and show a message
     observeEvent(input$orthoTryExample, {
         orthoInputGenes(exampleData)
 
-        insertUI(
-            selector = "#orthoPanelSidebar",
-            where = "beforeEnd",
-            ui = tags$div(
-                id = "orthoExampleAlert",
-                class = "alert alert-dissmissible alert-success",
-                tags$button(
-                    HTML("&times;"),
-                    type = "button",
-                    class = "close",
-                    `data-dismiss` = "alert"
-                ),
-                tags$b("Example data successfully loaded. Click the 'Map' button to continue.")
-            )
+        insertAlert(
+            location = "#orthoPanelSidebar",
+            ID = "orthoExampleAlert",
+            type = "success",
+            content = "Example data successfully loaded. Click the 'Map' button to continue."
         )
     }, ignoreInit = TRUE, ignoreNULL = TRUE)
 
@@ -767,7 +763,7 @@ server <- function(input, output, session) {
     })
 
 
-    # Convert to a data frame, and fix column name for easy joining later.
+    # Convert to a data frame, and fix column name for easy joining later
     orthoGenesTable <- reactive({
         req(orthoInputGenes(), input$strain1, input$strain2, input$orthoSearch)
 
@@ -777,7 +773,7 @@ server <- function(input, output, session) {
         return(part1)
     })
 
-    # Map the genes between strains using previously defined function.
+    # Map the genes between strains using previously defined function
     mappedOrthoGenes <- reactive({
         req(orthoGenesTable())
         isolate(input$orthoSearch)
@@ -819,7 +815,7 @@ server <- function(input, output, session) {
         removeUI("#orthoExampleAlert")
     })
 
-    # Render summary of how many input genes mapped successfully.
+    # Render summary of how many input genes mapped successfully
     output$orthoResultSummary <- renderUI({
         input$orthoSearch
         isolate({
@@ -834,7 +830,7 @@ server <- function(input, output, session) {
     })
 
     # Create the table containing the missing genes (those without orthologs),
-    # if present.
+    # if present
     output$orthoMissingGenesTable <- DT::renderDataTable({
         isolate(missingOrthoGenes())
     }, options = list(searching = FALSE,
@@ -850,22 +846,13 @@ server <- function(input, output, session) {
     # Provide an error message if no genes were extracted from the users input
     observeEvent(input$orthoSearch, {
         if (nrow(mappedOrthoGenes()) == 0 & nrow(missingOrthoGenes()) == 0) {
-            insertUI(
-                selector = "#orthoPanelSidebar",
-                where = "beforeEnd",
-                ui = tags$div(
-                    id = "orthoFailAlert",
-                    class = "alert alert-dissmissible alert-danger",
-                    tags$button(
-                        HTML("&times;"),
-                        type = "button",
-                        class = "close",
-                        `data-dismiss` = "alert"
-                    ),
-                    tags$b("ERROR: No matches were found for your genes. ",
-                           "Please check your inputs and ensure they are in the ",
-                           "correct format.")
-                )
+            insertAlert(
+                location = "#orthoPanelSidebar",
+                ID = "orthoFailAlert",
+                type = "danger",
+                content = paste0("ERROR: No matches were found for your genes. ",
+                                 "Please check your inputs and ensure they are ",
+                                 "in the correct format.")
             )
         }
     })
@@ -879,23 +866,16 @@ server <- function(input, output, session) {
             if (nrow(missingOrthoGenes()) == 0) {
                 return(NULL)
             } else {
-                insertUI(
-                    selector = "#orthoPanelSidebar",
-                    where = "beforeEnd",
-                    ui = tags$div(
-                        id = "orthoMissingAlert",
-                        class = "alert alert-dissmissible alert-warning",
-                        tags$button(
-                            HTML("&times;"),
-                            type = "button",
-                            class = "close",
-                            `data-dismiss` = "alert"
-                        ),
-                        tags$b("WARNING: No orthologs were found for some of ",
-                               "your genes. Please check the table to see ",
-                               "which genes did not have a match.")
-                    )
+
+                insertAlert(
+                    location = "#orthoPanelSidebar",
+                    ID = "orthoMissingAlert",
+                    type = "warning",
+                    content = paste0("WARNING: No orthologs were found for some ",
+                                     "of your genes. Please check the table to ",
+                                     "see which genes did not have a match.")
                 )
+
                 return(tagList(
                     tags$hr(),
                     tags$div(
@@ -929,7 +909,23 @@ server <- function(input, output, session) {
             if (nrow(mappedOrthoGenes()) != 0) {
                 tags$form(
                     class = "well",
-                    tags$p("Download your orthologs as a tab-delimted file:"),
+
+                    tags$p(HTML(paste0(
+                        "Download your orthologs as a tab-delimted file, ",
+                        "or click one of these links to obtain annotations ",
+                        "and/or sequences for either strain used in the ",
+                        "mapping:<br><b>",
+                        actionLink(
+                            inputId = "switchAnnoStrain1",
+                            label = input$strain1
+                        ),
+                        "</b> or <b>",
+                        actionLink(
+                            inputId = "switchAnnoStrain2",
+                            label = paste0(input$strain2, ".")
+                        ), "</b>"
+                    ))),
+
                     downloadButton(
                         "mappedOrtho_dl",
                         tags$b("Download Orthologs"),
@@ -940,7 +936,55 @@ server <- function(input, output, session) {
             }
         })
     })
-}
+
+    # Allow the user to take their input or output genes from the ortholog tab
+    # and go straight to the annotation tab
+    observeEvent(input$switchAnnoStrain1, {
+
+        updateNavbarPage(session, inputId = "navBarLayout", selected = "annoTab")
+
+        mappedOrthoGenes()[, 1] %>% annoInputGenes()
+
+        updateSelectInput(
+            session = session,
+            inputId = "annoStrainChoice",
+            selected = input$strain1
+        )
+
+        insertAlert(
+            location = "#annoPanelSidebar",
+            ID = "switchedFromOrtho1",
+            type = "info",
+            content = paste0("Successfully loaded previous data. Click the ",
+            "'Search' button to proceed.")
+        )
+    }, ignoreInit = TRUE, ignoreNULL = TRUE)
+
+    # Same as above but for the second strain. Here since we are using the
+    # output of the ortholog mapping, we need to grab the second column (IDs for
+    # "mapped to" strain), instead of the input data like above.
+    observeEvent(input$switchAnnoStrain2, {
+
+        updateNavbarPage(session, inputId = "navBarLayout", selected = "annoTab")
+
+        mappedOrthoGenes()[, 2] %>% annoInputGenes()
+
+        updateSelectInput(
+            session = session,
+            inputId = "annoStrainChoice",
+            selected = input$strain2
+        )
+
+        insertAlert(
+            location = "#annoPanelSidebar",
+            ID = "switchedFromOrtho1",
+            type = "info",
+            content = paste0("Successfully loaded previous data. Click the ",
+                             "'Search' button to proceed.")
+        )
+    }, ignoreInit = TRUE, ignoreNULL = TRUE)
+
+} # This closes the shiny::server() call
 
 
 
