@@ -1,0 +1,17 @@
+Package: getPASequences
+Title: Repository for PATool App
+Version: 0.1.0.0
+Authors@R: 
+    person(given = "Travis",
+           family = "Blimkie",
+           role = c("aut", "cre"),
+           email = "travis.m.blimkie@gmail.com"
+Description: This app is designed to aid researches working with Pseudomonas 
+  aeruginosa by providing a single app which can retrieve annotation data for 
+  multiple genes at once. It also provides the ability to map between the most 
+  commonly used strains of P. aeruginosa.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
