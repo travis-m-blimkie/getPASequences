@@ -69,8 +69,8 @@ shinyApp(
 
                     tags$div(
 
-                        # Note that we only need `paste0()` here because of the link
-                        # to the about page within the body of the text.
+                        # Note that we only need `paste0()` here because of the
+                        # link to the about page within the body of the text.
                         tags$p(HTML(paste0(
                             "Welcome to PATool, a Shiny app designed to facilitate ",
                             "analyses with <em>Pseudomonas aeruginosa</em>. Here ",
@@ -110,8 +110,8 @@ shinyApp(
                     )
                 ),
 
-                # Separate div to include the lab logo below the main section. Also made
-                # into a clickable link!
+                # Separate div to include the lab logo below the main section.
+                # Also made into a clickable link!
                 tags$div(
                     style = "position:fixed; bottom:0px; padding-bottom: 10px",
                     # style = "padding-top: 5vw; padding-bottom: 10px; padding-right: 10px",
@@ -128,9 +128,9 @@ shinyApp(
                 value = "annoTab",
                 "Annotations and Sequences",
 
-                # Custome sidebarLayout. We are building this as a div so it can be
-                # assigned an ID, which is needed for the alert rendered when the
-                # example data is loaded.
+                # Custom sidebarLayout. We are building this as a div so it can
+                # be assigned an ID, which is needed for the alert rendered when
+                # the example data is loaded.
                 tags$div(
                     class = "col-sm-4 manual-sidebar",
                     id = "annoPanelSidebar",
@@ -140,7 +140,7 @@ shinyApp(
                         class = "well",
                         style = "padding-top: 0",
 
-                        tags$h3("Upload Your Genes"),
+                        tags$h3(tags$b("Upload Your Genes")),
 
                         tags$p(
                             "Here you can upload your genes as locus tags to ",
@@ -161,7 +161,11 @@ shinyApp(
                         selectInput(
                             inputId = "annoStrainChoice",
                             label = "Please select a strain:",
-                            choices = c(PAO1 = "PAO1", PA14 = "PA14", LESB58 = "LESB58"),
+                            choices = c(
+                                PAO1 = "PAO1",
+                                PA14 = "PA14",
+                                LESB58 = "LESB58"
+                            ),
                             width = "50%"
                         ),
 
@@ -183,8 +187,9 @@ shinyApp(
                         ),
 
 
-                        # Button which triggers results to display. Most code depends on
-                        # this input state changing before running (sort of?).
+                        # Button which triggers results to display. Most code
+                        # depends on this input state changing before running
+                        # (sort of?).
                         actionButton(
                             inputId = "annoSearch",
                             label = tags$b("Search"),
@@ -212,7 +217,7 @@ shinyApp(
                     # when rendering output tables. There are `shiny` versions
                     # of the same functions, and although DT is loaded later, we
                     # want to be explicit just in case.
-                    h3("Your results will be displayed below:"),
+                    tags$h3(tags$b("Your results will be displayed below:")),
                     tags$br(),
                     DT::dataTableOutput("annoDisplayTable"),
 
@@ -226,6 +231,7 @@ shinyApp(
                 )
             ),
 
+
             ##########################
             ## Ortholog Mapping Tab ##
             ##########################
@@ -235,13 +241,13 @@ shinyApp(
 
                 tags$div(
                     class = "col-sm-4 manual-sidebar",
-                    id = "orthoPanelSidebar",
+                    id    = "orthoPanelSidebar",
 
                     tags$form(
                         class = "well",
                         style = "padding-top: 0",
 
-                        tags$h3("Upload Your Genes"),
+                        tags$h3(tags$b("Upload Your Genes")),
 
                         tags$p(
                             "Paste your genes (one per line) into the box below, then ",
@@ -269,12 +275,11 @@ shinyApp(
                             )
                         ),
 
-                        # Separator since we have both dropdowns on one "line"
+                        # Separator since we have both drop downs on one "line"
                         tags$div(
                             style = "display: inline-block; vertical-align: top; width: 100px;",
                             HTML("<br>")
                         ),
-
 
                         # Choose strain 2
                         tags$div(
@@ -286,6 +291,7 @@ shinyApp(
                                 selected = "PA14"
                             )
                         ),
+
 
                         # Input area for genes
                         textAreaInput(
@@ -303,8 +309,8 @@ shinyApp(
                             style = "font-size: 110%"
                         ),
 
-                        # Main search button which triggers display of results and
-                        # potential alerts
+                        # Main search button which triggers display of results
+                        # and potential alerts
                         actionButton(
                             "orthoSearch",
                             tags$b("Map"),
@@ -325,7 +331,7 @@ shinyApp(
                 tags$div(
                     class = "col-sm-8",
 
-                    tags$h3("Your results will be displayed below:"),
+                    tags$h3(tags$b("Your results will be displayed below:")),
                     tags$br(),
                     DT::dataTableOutput("orthoResultPanel"),
 
@@ -336,6 +342,7 @@ shinyApp(
                     uiOutput("orthoMissingGenesPanel")
                 )
             ),
+
 
             ###############
             ## About Tab ##
@@ -407,12 +414,12 @@ shinyApp(
         ## Welcome Tab ##
         #################
 
-        # Switch to the anno tab panel via the button
+        # Switch to the Annotations tab panel via the button
         observeEvent(input$annoTabBtn, {
             updateNavbarPage(session, inputId = "navBarLayout", selected = "annoTab")
         }, ignoreInit = TRUE)
 
-        # Switch to the ortholog tab panel via the button
+        # Switch to the Ortholog tab panel via the button
         observeEvent(input$orthoTabBtn, {
             updateNavbarPage(session, inputId = "navBarLayout", selected = "orthoTab")
         }, ignoreInit = TRUE)
@@ -423,7 +430,7 @@ shinyApp(
         }, ignoreInit = TRUE)
 
         # Reactive value which will hold either user input data or example data
-        annoInputGenes <- reactiveVal()
+        annoInputGenes  <- reactiveVal()
         orthoInputGenes <- reactiveVal()
 
 
@@ -440,14 +447,16 @@ shinyApp(
                 location = "#annoPanelSidebar",
                 ID = "annoExampleAlert",
                 type = "success",
-                content = paste0("Example data successfully loaded. Click the ",
-                                 "'Search' button to continue.")
+                content = paste0(
+                    "Example data successfully loaded. Click the 'Search' ",
+                    "button to continue."
+                )
             )
         }, ignoreInit = TRUE, ignoreNULL = TRUE)
 
 
-        # Extract the user's genes to be mapped, using a single regex to match locus
-        # tags from any of the three supported strains.
+        # Extract the user's genes to be mapped, using a single regex to match
+        # locus tags from any of the three supported strains.
         observeEvent(input$annoPastedInput, {
             str_extract_all(input$annoPastedInput, pattern = "PA(14|LES)?_?[0-9]{4,5}") %>%
                 map(~str_trim(.)) %>%
@@ -482,7 +491,8 @@ shinyApp(
                 arrange(`Locus Tag`)
         })
 
-        # Get numbers of genes to be included as a summary below the results table
+        # Get numbers of genes to be included as a summary below the results
+        # table so the user can see how many genes successfully mapped
         annoNumGenes <- reactive({
             list(
                 submitted = nrow(annoInputGenesTable()),
@@ -493,20 +503,27 @@ shinyApp(
 
         # Now we deal with any genes submitted that didn't have a match.
         annoNoMatchGenes <- reactive({
-            anti_join(annoInputGenesTable(), annoFilteredTable(), by = "Locus Tag")
+            anti_join(
+                annoInputGenesTable(),
+                annoFilteredTable(),
+                by = "Locus Tag"
+            )
         })
 
 
-        # Provide an error message if no genes were extracted from the users input
+        # Provide an error message if no genes were extracted from the users
+        # input
         observeEvent(input$annoSearch, {
             if (nrow(annoDisplayTable()) == 0 & nrow(annoNoMatchGenes()) == 0) {
                 insertAlert(
                     location = "#annoPanelSidebar",
                     ID = "annoFailAlert",
                     type = "danger",
-                    content = paste0("ERROR: No matches were found for your genes. ",
-                                     "Please check your inputs and ensure they are ",
-                                     "in the correct format.")
+                    content = paste0(
+                        "ERROR: No matches were found for your genes. ",
+                        "Please check your inputs and ensure they are ",
+                        "in the correct format."
+                    )
                 )
             }
         })
@@ -587,7 +604,9 @@ shinyApp(
                         return(
                             tagList(
                                 tags$hr(),
-                                tags$div(tags$h3("The following submitted genes had no matches:")),
+                                tags$div(tags$h3(tags$b(
+                                    "The following submitted genes had no matches:"
+                                ))),
                                 tags$div(
                                     class = "col-sm-4 manual-sidebar",
                                     DT::dataTableOutput("annoMissingGenesTable"),
@@ -602,8 +621,8 @@ shinyApp(
         })
 
 
-        # Download file for displayTable (annotations) to be shown with next
-        # chunk via `renderUI()`.
+        # Download file for displayTable() reactive value (annotations) to be
+        # shown with next chunk via `renderUI()`.
         output$annoResultTable_dl <- downloadHandler(
             filename = function() {
                 paste0(input$annoStrainChoice, "_annotations.txt")
@@ -662,9 +681,9 @@ shinyApp(
         )
 
 
-        # This chunk renders the UI for all three download buttons. This way, all
-        # the buttons are in a single form/well, which only displays when data is
-        # ready to download.
+        # This chunk renders the UI for all three download buttons. This way,
+        # all the buttons are in a single form/well, which only displays when
+        # data is ready to download.
         observeEvent(input$annoSearch, {
             output$annoBothBtns <- renderUI({
                 input$annoSearch
@@ -697,8 +716,9 @@ shinyApp(
                                     style = "width: 200px; background-color: #75818c; border-color: #75818c"
                                 ),
 
-                                # Divider so both sequence download buttons render on the
-                                # same line, with a small separation between them.
+                                # Divider so both sequence download buttons
+                                # render on the same line, with a small
+                                # separation between them.
                                 tags$div(
                                     style = "display: inline-block; vertical-align: top; width: 10px;",
                                     HTML("<br>")
@@ -734,10 +754,14 @@ shinyApp(
                 location = "#orthoPanelSidebar",
                 ID = "switchedFromAnnos",
                 type = "info",
-                content = paste0("Successfully loaded previous data. Select a ",
-                                 "second strain, then click the 'Map' button to proceed.")
+                content = paste0(
+                    "Successfully loaded previous data. Select a ",
+                    "second strain, then click the 'Map' button to proceed."
+                )
             )
         }, ignoreInit = TRUE, ignoreNULL = TRUE)
+
+
 
 
         ##################
@@ -837,8 +861,8 @@ shinyApp(
             })
         })
 
-        # Create the table containing the missing genes (those without orthologs),
-        # if present
+        # Create the table containing the missing genes (those without
+        # orthologs), if present
         output$orthoMissingGenesTable <- DT::renderDataTable({
             isolate(missingOrthoGenes())
         }, options = list(searching = FALSE,
@@ -851,7 +875,8 @@ shinyApp(
         selection = "none")
 
 
-        # Provide an error message if no genes were extracted from the users input
+        # Provide an error message if no genes were extracted from the users
+        # input
         observeEvent(input$orthoSearch, {
             if (nrow(mappedOrthoGenes()) == 0 & nrow(missingOrthoGenes()) == 0) {
                 insertAlert(
@@ -868,8 +893,8 @@ shinyApp(
         })
 
 
-        # Render the table for genes without orthologs, warning if some genes did
-        # not have ortholgos
+        # Render the table for genes without orthologs, warning if some genes
+        # did not have orthologs
         output$orthoMissingGenesPanel <- renderUI({
             input$orthoSearch
             isolate({
@@ -890,9 +915,9 @@ shinyApp(
 
                     return(tagList(
                         tags$hr(),
-                        tags$div(
-                            tags$h3("The following submitted genes had no orthologs:")
-                        ),
+                        tags$div(tags$h3(tags$b(
+                            "The following submitted genes had no orthologs:"
+                        ))),
                         tags$div(
                             class = "col-sm-4 manual-sidebar",
                             DT::dataTableOutput("orthoMissingGenesTable"),
@@ -929,13 +954,16 @@ shinyApp(
                             "mapping:<br><b>",
                             actionLink(
                                 inputId = "switchAnnoStrain1",
-                                label = input$strain1
+                                label = input$strain1,
+                                style = "font-size: 110%"
                             ),
                             "</b> or <b>",
                             actionLink(
                                 inputId = "switchAnnoStrain2",
-                                label = paste0(input$strain2, ".")
-                            ), "</b>"
+                                label = paste0(input$strain2, "."),
+                                style = "font-size: 110%"
+                            ),
+                            "</b>"
                         ))),
 
                         downloadButton(
@@ -949,8 +977,8 @@ shinyApp(
             })
         })
 
-        # Allow the user to take their input or output genes from the ortholog tab
-        # and go straight to the annotation tab
+        # Allow the user to take their input or output genes from the ortholog
+        # tab and go straight to the annotation tab
         observeEvent(input$switchAnnoStrain1, {
 
             updateNavbarPage(session, inputId = "navBarLayout", selected = "annoTab")
@@ -975,8 +1003,8 @@ shinyApp(
         }, ignoreInit = TRUE, ignoreNULL = TRUE)
 
         # Same as above but for the second strain. Here since we are using the
-        # output of the ortholog mapping, we need to grab the second column (IDs for
-        # "mapped to" strain), instead of the input data like above.
+        # output of the ortholog mapping, we need to grab the second column (IDs
+        # for "mapped to" strain), instead of the input data like above.
         observeEvent(input$switchAnnoStrain2, {
 
             updateNavbarPage(session, inputId = "navBarLayout", selected = "annoTab")
