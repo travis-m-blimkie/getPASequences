@@ -1,5 +1,3 @@
-<img src="www/hexSticker.svg" align="right" width="100" height="100"/> 
-
 # PATool
 
 ### Available [here!](https://travis-m-blimkie.shinyapps.io/PATool/)  
@@ -13,7 +11,10 @@ currently support the following strains:
 * PA14
 * LESB58
 
-It utilizes annotations from the [Pseudomonas Genome
+If you would like another strain added, please open an Github issue and I'll
+look into it.  
+
+This app utilizes annotations from the [Pseudomonas Genome
 Database](http://pseudomonas.com/), while ortholog information is taken from
 [OrtholugeDB](http://pseudoluge.pseudomonas.com/). Sequences are in the
 multi-fasta format with descriptive headings, designed to be compatible with
