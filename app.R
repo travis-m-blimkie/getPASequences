@@ -1,4 +1,8 @@
 
+# TODO Add some `removeUI()` calls to clear alerts when certain buttons/links
+# are clicked
+
+
 # Load libraries, data, and functions -------------------------------------
 
 library(shiny)
@@ -26,13 +30,13 @@ shinyApp(
 
         # This CSS file is equivalent to using `shinytheme("flatly")`, with some
         # tweaks made. By using a local version of the same theme, we can more
-        # easily make global tweaks to the app, without inserting as much CSS into
-        # this file.
+        # easily make global tweaks to the app, without inserting as much CSS
+        # into this file.
         theme = "shinyflatlybootstrap.css",
 
         # Head linking to custom CSS tweaks
         tags$head(
-            tags$link(rel = "stylesheet", type = "text/css", href = "css/user.css")
+            tags$link(rel = "stylesheet", type = "text/css", href = "user.css")
         ),
 
         navbarPage(
@@ -41,8 +45,8 @@ shinyApp(
             ####################################
             id = "navBarLayout",
 
-            # Blank title, as we want the "Welcome" tab to be our title. Maybe place
-            # an image/logo here in the future...
+            # Blank title, as we want the "Welcome" tab to be our title. Maybe
+            # place an image/logo here in the future...
             title = HTML(""),
 
             # Title that's shown in the browser window
@@ -51,8 +55,6 @@ shinyApp(
             # Make the navbar collapsible
             collapsible = TRUE,
 
-            # Enable shinyjs usage - NEED THIS LINE!!
-            header = tagList(useShinyjs()),
 
             #################
             ## Welcome Tab ##
@@ -72,13 +74,14 @@ shinyApp(
                         # Note that we only need `paste0()` here because of the
                         # link to the about page within the body of the text.
                         tags$p(HTML(paste0(
-                            "Welcome to PATool, a Shiny app designed to facilitate ",
-                            "analyses with <em>Pseudomonas aeruginosa</em>. Here ",
-                            "you can upload a list of locus tags and retrieve ",
-                            "gene annotations, nucleotide or amino acid ",
-                            "sequences, as well as map between strains. For more ",
-                            "information, see the <b>",
-                            actionLink("aboutTabLink", "About"), "</b> page."
+                            "Welcome to PATool, a Shiny app designed to ",
+                            "facilitate analyses with <em>Pseudomonas ",
+                            "aeruginosa</em>. Here you can upload a list of ",
+                            "locus tags and retrieve gene annotations, ",
+                            "nucleotide or amino acid sequences, as well as ",
+                            "map between strains. For more information, see ",
+                            "the <b>", actionLink("aboutTabLink", "About"),
+                            "</b> page."
                         ))),
 
                         tags$p(HTML(
@@ -114,7 +117,6 @@ shinyApp(
                 # Also made into a clickable link!
                 tags$div(
                     style = "position:fixed; bottom:0px; padding-bottom: 10px",
-                    # style = "padding-top: 5vw; padding-bottom: 10px; padding-right: 10px",
                     htmltools::HTML(
                         "<a href='http://cmdr.ubc.ca/bobh/'> <img src = 'hancock-lab-logo.svg'> </a>"
                     )
@@ -144,15 +146,15 @@ shinyApp(
 
                         tags$p(
                             "Here you can upload your genes as locus tags to ",
-                            "search for annotations. You may also use the link ",
-                            "below to try our example data."
+                            "search for annotations. You may also use the ",
+                            "link below to try our example data."
                         ),
 
                         tags$p(
                             "Note that IDs must be in the proper format (e.g. ",
-                            "PA0000 for strain PAO1) to be recognized and parsed ",
-                            "correctly. Non-matching IDs are returned in a ",
-                            "separate table. "
+                            "PA0000 for strain PAO1) to be recognized and ",
+                            "parsed correctly. Non-matching IDs are returned ",
+                            "in a separate table. "
                         ),
 
                         tags$br(),
@@ -203,8 +205,8 @@ shinyApp(
 
                     # Output for all the download buttons (annos, protein, and
                     # nucleotide sequences. It goes inside the main div for the
-                    # sidebar, but outside the well which contains inputs (above),
-                    # so is rendered as a separate well/box.
+                    # sidebar, but outside the well which contains inputs
+                    # (above), so is rendered as a separate well/box.
                     uiOutput("annoBothBtns")
                 ),
 
@@ -250,16 +252,16 @@ shinyApp(
                         tags$h3(tags$b("Upload Your Genes")),
 
                         tags$p(
-                            "Paste your genes (one per line) into the box below, then ",
-                            "select the strains for which you wish to retrieve ",
-                            "orthologs. Additionally you may click the link below ",
-                            "to load some example genes."
+                            "Paste your genes (one per line) into the box ",
+                            "below, then select the strains for which you ",
+                            "wish to retrieve orthologs. Additionally you may ",
+                            "click the link below to load some example genes."
                         ),
 
                         tags$p(
-                            "Please note that IDs must be in the proper format ",
-                            "(e.g. PA14_12345 for strain PA14) to be recognized ",
-                            "and parsed correctly."
+                            "Please note that IDs must be in the proper ",
+                            "format (e.g. PA14_12345 for strain PA14) to be ",
+                            "recognized and parsed correctly."
                         ),
 
                         tags$br(),
@@ -270,7 +272,11 @@ shinyApp(
                             selectInput(
                                 inputId = "strain1",
                                 label = "Mapping from:",
-                                choices = c(PAO1 = "PAO1", PA14 = "PA14", LESB58 = "LESB58"),
+                                choices = c(
+                                    PAO1   = "PAO1",
+                                    PA14   = "PA14",
+                                    LESB58 = "LESB58"
+                                ),
                                 selected = "PAO1"
                             )
                         ),
@@ -287,7 +293,11 @@ shinyApp(
                             selectInput(
                                 inputId = "strain2",
                                 label = "Mappping to:",
-                                choices = c(PAO1 = "PAO1", PA14 = "PA14", LESB58 = "LESB58"),
+                                choices = c(
+                                    PAO1 = "PAO1",
+                                    PA14 = "PA14",
+                                    LESB58 = "LESB58"
+                                ),
                                 selected = "PA14"
                             )
                         ),
@@ -358,10 +368,16 @@ shinyApp(
 
                     tags$hr(),
 
+                    tags$p(
+                        "This app was created by Travis Blimkie at the REW ",
+                        "Hancock Lab at the University of British Columbia."
+                    ),
+
                     tags$p("Source code for this app is available at the ",
                            tags$a(href = "https://github.com/travis-m-blimkie/getPASequences", "Github page"),
                            " under the MIT license.",
-                           "The data used by this app for annotations and sequences comes from the ",
+                           "The data used by this app for annotations and ",
+                           "sequences comes from the ",
                            tags$a(href = "https://pseudomonas.com", "Pseudomonas Genome Database"),
                            ", version 18.1.",
                            "Ortholog information was obtained from ",
@@ -376,14 +392,15 @@ shinyApp(
                     # List of requisite packages, and scaling the font size slightly.
                     tags$dl(
                         style = "font-size: 1.2em",
+
+                        # Shiny!
                         tags$dt(tags$a(href = "https://shiny.rstudio.com/", "Shiny")),
                         tags$dd("Framework for app construction."),
-                        # ShinyJS
-                        tags$dt(tags$a(href = "https://deanattali.com/shinyjs/", "ShinyJS")),
-                        tags$dd("Additional app functionality."),
+
                         # tidyverse
-                        tags$dt(tags$a(href = "https://www.tidyverse.org/", "The tidyverse")),
+                        tags$dt(tags$a(href = "https://www.tidyverse.org/", "The Tidyverse")),
                         tags$dd("Data manipulation functions, as well as reading and writing data."),
+
                         # seqinr
                         tags$dt(tags$a(href = "https://cran.r-project.org/package=seqinr", "seqinr")),
                         tags$dd("Writing output fasta files.")
@@ -394,7 +411,6 @@ shinyApp(
                 # into a clickable link!
                 tags$div(
                     style = "position:fixed; bottom:0px; padding-bottom: 10px",
-                    # style = "padding-top: 5vw; padding-bottom: 10px; padding-right: 10px",
                     htmltools::HTML(
                         "<a href='http://cmdr.ubc.ca/bobh/'> <img src = 'hancock-lab-logo.svg'> </a>"
                     )
@@ -416,17 +432,29 @@ shinyApp(
 
         # Switch to the Annotations tab panel via the button
         observeEvent(input$annoTabBtn, {
-            updateNavbarPage(session, inputId = "navBarLayout", selected = "annoTab")
+            updateNavbarPage(
+                session,
+                inputId = "navBarLayout",
+                selected = "annoTab"
+            )
         }, ignoreInit = TRUE)
 
         # Switch to the Ortholog tab panel via the button
         observeEvent(input$orthoTabBtn, {
-            updateNavbarPage(session, inputId = "navBarLayout", selected = "orthoTab")
+            updateNavbarPage(
+                session,
+                inputId = "navBarLayout",
+                selected = "orthoTab"
+            )
         }, ignoreInit = TRUE)
 
         # Switch to the About panel via link in the intro text
         observeEvent(input$aboutTabLink, {
-            updateNavbarPage(session, inputId = "navBarLayout", selected = "aboutTab")
+            updateNavbarPage(
+                session,
+                inputId = "navBarLayout",
+                selected = "aboutTab"
+            )
         }, ignoreInit = TRUE)
 
         # Reactive value which will hold either user input data or example data
@@ -458,7 +486,11 @@ shinyApp(
         # Extract the user's genes to be mapped, using a single regex to match
         # locus tags from any of the three supported strains.
         observeEvent(input$annoPastedInput, {
-            str_extract_all(input$annoPastedInput, pattern = "PA(14|LES)?_?[0-9]{4,5}") %>%
+
+            str_extract_all(
+                input$annoPastedInput,
+                pattern = "PA(14|LES)?_?[0-9]{4,5}"
+            ) %>%
                 map(~str_trim(.)) %>%
                 annoInputGenes()
         }, ignoreInit = TRUE, ignoreNULL = TRUE)
@@ -467,7 +499,11 @@ shinyApp(
         # Convert to a data frame, and fix column name for easy joining later.
         annoInputGenesTable <- reactive({
             req(annoInputGenes())
-            part1 <- data.frame(Genes = annoInputGenes(), stringsAsFactors = FALSE)
+
+            part1 <- data.frame(
+                Genes = annoInputGenes(),
+                stringsAsFactors = FALSE
+            )
             colnames(part1) <- "Locus Tag"
             return(part1)
         })
@@ -478,7 +514,10 @@ shinyApp(
         # separately.
         annoFilteredTable <- reactive({
             req(annoInputGenesTable(), input$annoStrainChoice)
-            retrieveAnnotations(annoInputGenesTable(), strain = input$annoStrainChoice)
+            retrieveAnnotations(
+                annoInputGenesTable(),
+                strain = input$annoStrainChoice
+            )
         })
 
 
@@ -597,15 +636,16 @@ shinyApp(
                             ID = "annoNomatchWarning",
                             type = "warning",
                             content = paste0(
-                                "WARNING: Some genes did not have a match. Check ",
-                                "the table to see which genes did not have annotations."
+                                "WARNING: Some genes did not have a match. ",
+                                "Check the table to see which genes did not ",
+                                "have annotations."
                             )
                         )
                         return(
                             tagList(
                                 tags$hr(),
                                 tags$div(tags$h3(tags$b(
-                                    "The following submitted genes had no matches:"
+                                    "The following genes had no matches:"
                                 ))),
                                 tags$div(
                                     class = "col-sm-4 manual-sidebar",
@@ -693,14 +733,16 @@ shinyApp(
                             tags$form(
                                 class = "well",
                                 tags$p(HTML(paste0(
-                                    "Download the annotation table as a tab delimited-file, ",
-                                    "or the nucleotide or amino acid sequences in multi-",
-                                    "fasta format. Or click <b>",
+                                    "Download the annotation table as a tab ",
+                                    "delimited-file, or the nucleotide or ",
+                                    "amino acid sequences in multi-fasta ",
+                                    "format. Or click <b>",
                                     actionLink(
                                         inputId = "switchToOrthos",
                                         label = "here"
                                     ),
-                                    "</b> to retrieve orthologs for your input genes."
+                                    "</b> to retrieve orthologs for your ",
+                                    "input genes."
                                 ))),
                                 downloadButton(
                                     "annoResultTable_dl",
@@ -740,7 +782,11 @@ shinyApp(
         # straight to the ortholog tab
         observeEvent(input$switchToOrthos, {
 
-            updateNavbarPage(session, inputId = "navBarLayout", selected = "orthoTab")
+            updateNavbarPage(
+                session,
+                inputId = "navBarLayout",
+                selected = "orthoTab"
+            )
 
             orthoInputGenes(annoInputGenes())
 
@@ -777,8 +823,8 @@ shinyApp(
                 ID = "orthoExampleAlert",
                 type = "success",
                 content = paste0(
-                    "Example data successfully loaded. Click the 'Map' button to ",
-                    "continue."
+                    "Example data successfully loaded. Click the 'Map' button ",
+                    "to continue."
                 )
             )
         }, ignoreInit = TRUE, ignoreNULL = TRUE)
@@ -797,9 +843,17 @@ shinyApp(
 
         # Convert to a data frame, and fix column name for easy joining later
         orthoGenesTable <- reactive({
-            req(orthoInputGenes(), input$strain1, input$strain2, input$orthoSearch)
+            req(
+                orthoInputGenes(),
+                input$strain1,
+                input$strain2,
+                input$orthoSearch
+            )
 
-            part1 <- data.frame(Genes = orthoInputGenes(), stringsAsFactors = FALSE)
+            part1 <- data.frame(
+                Genes = orthoInputGenes(),
+                stringsAsFactors = FALSE
+            )
             colnames(part1) <- paste0(input$strain1, " Locus Tag")
 
             return(part1)
@@ -863,16 +917,19 @@ shinyApp(
 
         # Create the table containing the missing genes (those without
         # orthologs), if present
-        output$orthoMissingGenesTable <- DT::renderDataTable({
-            isolate(missingOrthoGenes())
-        }, options = list(searching = FALSE,
-                          scrollX = "100%",
-                          scrollY = "500px",
-                          scrollCollapse = TRUE,
-                          paging = FALSE,
-                          dom = "t"),
-        rownames = FALSE,
-        selection = "none")
+        output$orthoMissingGenesTable <- DT::renderDataTable(
+            {isolate(missingOrthoGenes())},
+            options = list(
+                searching = FALSE,
+                scrollX = "100%",
+                scrollY = "500px",
+                scrollCollapse = TRUE,
+                paging = FALSE,
+                dom = "t"
+            ),
+            rownames = FALSE,
+            selection = "none"
+        )
 
 
         # Provide an error message if no genes were extracted from the users
@@ -907,9 +964,9 @@ shinyApp(
                         ID = "orthoMissingAlert",
                         type = "warning",
                         content = paste0(
-                            "WARNING: No orthologs were found for some of your ",
-                            "genes. Please check the table to see which genes did ",
-                            "not have a match."
+                            "WARNING: No orthologs were found for some of ",
+                            "your genes. Please check the table to see which ",
+                            "genes did not have a match."
                         )
                     )
 
@@ -949,9 +1006,9 @@ shinyApp(
 
                         tags$p(HTML(paste0(
                             "Download your orthologs as a tab-delimted file, ",
-                            "or click one of these links to obtain annotations ",
-                            "and/or sequences for either strain used in the ",
-                            "mapping:<br><b>",
+                            "or click one of these links to obtain ",
+                            "annotations and/or sequences for either strain ",
+                            "used in the mapping:<br><b>",
                             actionLink(
                                 inputId = "switchAnnoStrain1",
                                 label = input$strain1,
@@ -981,7 +1038,11 @@ shinyApp(
         # tab and go straight to the annotation tab
         observeEvent(input$switchAnnoStrain1, {
 
-            updateNavbarPage(session, inputId = "navBarLayout", selected = "annoTab")
+            updateNavbarPage(
+                session,
+                inputId = "navBarLayout",
+                selected = "annoTab"
+            )
 
             mappedOrthoGenes()[, 1] %>% annoInputGenes()
 
@@ -996,8 +1057,8 @@ shinyApp(
                 ID = "switchedFromOrtho1",
                 type = "info",
                 content = paste0(
-                    "Successfully loaded previous data. Click the 'Search' button ",
-                    "to proceed."
+                    "Successfully loaded previous data. Click the 'Search' ",
+                    "button to proceed."
                 )
             )
         }, ignoreInit = TRUE, ignoreNULL = TRUE)
@@ -1007,7 +1068,11 @@ shinyApp(
         # for "mapped to" strain), instead of the input data like above.
         observeEvent(input$switchAnnoStrain2, {
 
-            updateNavbarPage(session, inputId = "navBarLayout", selected = "annoTab")
+            updateNavbarPage(
+                session,
+                inputId = "navBarLayout",
+                selected = "annoTab"
+            )
 
             mappedOrthoGenes()[, 2] %>% annoInputGenes()
 
@@ -1022,8 +1087,8 @@ shinyApp(
                 ID = "switchedFromOrtho1",
                 type = "info",
                 content = paste0(
-                    "Successfully loaded previous data. Click the 'Search' button ",
-                    "to proceed."
+                    "Successfully loaded previous data. Click the 'Search' ",
+                    "button to proceed."
                 )
             )
         }, ignoreInit = TRUE, ignoreNULL = TRUE)
