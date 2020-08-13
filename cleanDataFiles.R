@@ -61,9 +61,8 @@ annoData_3 <- annoData_2 %>% map(
 # ~~~~~~
 # Finally we can save each annotation table into an RDS object for easy loading
 # by the app.
-map2(
+iwalk(
   annoData_3,
-  names(annoData_3),
   ~saveRDS(.x, file = paste0("data/annotations_", .y, ".rds"))
 )
 
@@ -164,8 +163,7 @@ orthoData_4 <- list(
 
 # Saving the Ortholog Files
 # ~~~~~~~~~~~~~~~~~~~~~~~~~
-map2(
+iwalk(
   orthoData_4,
-  names(orthoData_4),
   ~saveRDS(.x, file = paste0("data/orthologs_", .y, ".rds"))
 )
