@@ -26,3 +26,5 @@ Available with the MIT license.
 ***
 
 ![](www/PATool_landingPage.svg)
+
+<br>
