@@ -39,6 +39,7 @@ retrieveAnnotations <- function(inputDF, strain) {
 #' @return Data frame containing ortholog information.
 #'
 #' @export
+#'
 #' @description Main function used in the Ortholog tab for retrieving orthologs
 #'   from the user's input genes.
 #'
@@ -68,7 +69,7 @@ mapOrthosGenerally <- function(inputDF, strain1, strain2) {
 #' @param type Type of alert; one of "success", "info", "warning", or "danger".
 #' @param content Text to be displayed in the alert.
 #'
-#' @return
+#' @return Alert UI object to give feedback or info to the user
 #'
 #' @export
 #'

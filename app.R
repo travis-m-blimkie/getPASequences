@@ -11,7 +11,12 @@ library(shiny)
 # including the example data. `functions.R` as expected contains some functions
 # for the app.
 source("global.R", local = TRUE)
-import::from("functions.R", retrieveAnnotations, mapOrthosGenerally, insertAlert)
+import::from(
+    "functions.R",
+    retrieveAnnotations,
+    mapOrthosGenerally,
+    insertAlert
+)
 
 # Useful colours which match the flatly theme:
 # Dark blue     #2c3e50
@@ -135,7 +140,7 @@ shinyApp(
                 # the example data is loaded.
                 tags$div(
                     class = "col-sm-4 manual-sidebar",
-                    id = "annoPanelSidebar",
+                    id    = "annoPanelSidebar",
 
                     ### SIDEBAR PANEL ###
                     tags$form(
@@ -175,7 +180,7 @@ shinyApp(
                         # Place to paste your genes of interest
                         textAreaInput(
                             inputId = "annoPastedInput",
-                            label = "Paste your list of locus tags, one per line:",
+                            label = "Paste your locus tags, one per line:",
                             placeholder = "Your genes here...",
                             height = "200px"
                         ),
@@ -203,10 +208,11 @@ shinyApp(
                         tags$br()
                     ),
 
-                    # Output for all the download buttons (annos, protein, and
-                    # nucleotide sequences. It goes inside the main div for the
-                    # sidebar, but outside the well which contains inputs
-                    # (above), so is rendered as a separate well/box.
+                    # Output for all the download buttons (annotations,
+                    # protein, and nucleotide sequences). It goes inside the
+                    # main div for the sidebar, but outside the well which
+                    # contains inputs (above), so is rendered as a separate
+                    # well/box.
                     uiOutput("annoBothBtns")
                 ),
 
@@ -241,6 +247,7 @@ shinyApp(
                 value = "orthoTab",
                 title = "Ortholog Mapping",
 
+                ### SIDEBAR PANEL ###
                 tags$div(
                     class = "col-sm-4 manual-sidebar",
                     id    = "orthoPanelSidebar",
@@ -369,36 +376,52 @@ shinyApp(
                     tags$hr(),
 
                     tags$p(
-                        "This app was created by Travis Blimkie at the REW ",
-                        "Hancock Lab at the University of British Columbia."
+                        "This app was created by Travis Blimkie at the ",
+                        tags$a(
+                            "REW Hancock Lab",
+                            href = "http://cmdr.ubc.ca/bobh/"
+                        ),
+                        "at the University of British Columbia."
                     ),
 
-                    tags$p("Source code for this app is available at the ",
-                           tags$a(href = "https://github.com/travis-m-blimkie/getPASequences", "Github page"),
-                           " under the MIT license.",
-                           "The data used by this app for annotations and ",
-                           "sequences comes from the ",
-                           tags$a(href = "https://pseudomonas.com", "Pseudomonas Genome Database"),
-                           ", version 18.1.",
-                           "Ortholog information was obtained from ",
-                           tags$a(href = "http://pseudoluge.pseudomonas.com/", "OrtholugeDB"),
-                           ", version 1.0."
+                    tags$p(
+                        "The source code is available at the",
+                        tags$a(
+                            "Github page",
+                            href = "https://github.com/travis-m-blimkie/getPASequences"
+                        ),
+                        "under the MIT license. The data used by this app ",
+                        "for annotations and sequences comes from the ",
+                        tags$a(
+                            "Pseudomonas Genome Database",
+                            href = "https://pseudomonas.com",
+                            .noWS = "after"
+                        ),
+                        ", version 18.1. Ortholog information was obtained ",
+                        "from ",
+                        tags$a(
+                            "OrtholugeDB",
+                            href = "http://pseudoluge.pseudomonas.com/",
+                            .noWS = "after"
+                        ),
+                        ", version 1.0."
                     ),
 
                     tags$br(),
 
                     tags$p("This app uses the following R packages:"),
 
-                    # List of requisite packages, and scaling the font size slightly.
+                    # List of requisite packages, and scaling up the font size
+                    # slightly.
                     tags$dl(
                         style = "font-size: 1.2em",
 
-                        # Shiny!
+                        # Shiny
                         tags$dt(tags$a(href = "https://shiny.rstudio.com/", "Shiny")),
                         tags$dd("Framework for app construction."),
 
                         # tidyverse
-                        tags$dt(tags$a(href = "https://www.tidyverse.org/", "The Tidyverse")),
+                        tags$dt(tags$a(href = "https://www.tidyverse.org/", "The tidyverse")),
                         tags$dd("Data manipulation functions, as well as reading and writing data."),
 
                         # seqinr
@@ -407,8 +430,8 @@ shinyApp(
                     )
                 ),
 
-                # Separate div to include the lab logo below the main section. Also made
-                # into a clickable link!
+                # Separate div to include the lab logo below the main section.
+                # Also made into a clickable link!
                 tags$div(
                     style = "position:fixed; bottom:0px; padding-bottom: 10px",
                     htmltools::HTML(
@@ -433,8 +456,8 @@ shinyApp(
         # Switch to the Annotations tab panel via the button
         observeEvent(input$annoTabBtn, {
             updateNavbarPage(
-                session,
-                inputId = "navBarLayout",
+                session  = session,
+                inputId  = "navBarLayout",
                 selected = "annoTab"
             )
         }, ignoreInit = TRUE)
@@ -442,7 +465,7 @@ shinyApp(
         # Switch to the Ortholog tab panel via the button
         observeEvent(input$orthoTabBtn, {
             updateNavbarPage(
-                session,
+                session  = session,
                 inputId = "navBarLayout",
                 selected = "orthoTab"
             )
@@ -451,7 +474,7 @@ shinyApp(
         # Switch to the About panel via link in the intro text
         observeEvent(input$aboutTabLink, {
             updateNavbarPage(
-                session,
+                session  = session,
                 inputId = "navBarLayout",
                 selected = "aboutTab"
             )
@@ -460,6 +483,8 @@ shinyApp(
         # Reactive value which will hold either user input data or example data
         annoInputGenes  <- reactiveVal()
         orthoInputGenes <- reactiveVal()
+
+
 
 
         ####################
@@ -661,7 +686,7 @@ shinyApp(
         })
 
 
-        # Download file for displayTable() reactive value (annotations) to be
+        # Download file for `displayTable()` reactive value (annotations) to be
         # shown with next chunk via `renderUI()`.
         output$annoResultTable_dl <- downloadHandler(
             filename = function() {
@@ -700,7 +725,7 @@ shinyApp(
 
 
         # The the `downloadHandler()` for amino acid sequences i.e.
-        # annoAASeqs_dl
+        # "annoAASeqs_dl"
         output$annoAASeqs_dl <- downloadHandler(
             filename = function() {
                 paste0(input$annoStrainChoice, "_proteinSequences.fasta")
@@ -1093,5 +1118,5 @@ shinyApp(
             )
         }, ignoreInit = TRUE, ignoreNULL = TRUE)
 
-    } # This closes the shiny::server() call
+    } # This closes the `server` argument
 )

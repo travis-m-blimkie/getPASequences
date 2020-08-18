@@ -1,4 +1,4 @@
-# PATool
+# **PATool**
 
 ### Available [here!](https://travis-m-blimkie.shinyapps.io/PATool/)  
 
@@ -19,12 +19,21 @@ Database](http://pseudomonas.com/), while ortholog information is taken from
 [OrtholugeDB](http://pseudoluge.pseudomonas.com/). Sequences are in the
 multi-fasta format with descriptive headings, designed to be compatible with
 programs such as batch submission to NCBI's BLAST. If you run into a bug or
-problem, open an issue and I'll look into it.
+problem, open an issue and I'll look into it.  
 
-Available with the MIT license. 
+## Versioning
+This package uses of [SemVer](https://semver.org/) for tracking progress and
+updates.
 
-***
+## Authors
+Travis Blimkie is the originator and principal contributor. Click
+[here](https://github.com/travis-m-blimkie/tRavis/graphs/contributors) for the 
+full list of all contributors.
 
-![](www/PATool_landingPage.svg)
+## License
+This project is written under the MIT license, available
+[here](https://github.com/travis-m-blimkie/tRavis/blob/master/LICENSE.md).
 
-<br>
+## Acknowledgements
+Thanks to everyone in the lab who has used these functions and provided
+ideas/feedback!
