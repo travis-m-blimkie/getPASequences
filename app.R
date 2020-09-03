@@ -514,7 +514,7 @@ shinyApp(
 
             str_extract_all(
                 input$annoPastedInput,
-                pattern = "PA(14|LES)?_?[0-9]{4,5}"
+                pattern = "PA(14|LES)?_?[0-9]{4,5}(\\.[0-9])?"
             ) %>%
                 map(~str_trim(.)) %>%
                 annoInputGenes()
@@ -859,7 +859,7 @@ shinyApp(
         observeEvent(input$orthoPastedInput, {
             str_extract_all(
                 input$orthoPastedInput,
-                pattern = "PA(14|LES)?_?[0-9]{4,5}"
+                pattern = "PA(14|LES)?_?[0-9]{4,5}(\\.[0-9])?"
             ) %>%
                 map(~str_trim(.)) %>%
                 orthoInputGenes()
