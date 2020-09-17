@@ -32,7 +32,7 @@ full list of all contributors.
 
 ## License
 This project is written under the MIT license, available
-[here](https://github.com/travis-m-blimkie/tRavis/blob/master/LICENSE.md).
+[here](https://github.com/travis-m-blimkie/tRavis/blob/master/LICENSE).
 
 ## Acknowledgements
 Thanks to everyone in the lab who has used these functions and provided
