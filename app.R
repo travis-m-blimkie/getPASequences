@@ -36,11 +36,15 @@ shinyApp(
         # tweaks made. By using a local version of the same theme, we can more
         # easily make global tweaks to the app, without inserting as much CSS
         # into this file.
-        theme = "shinyflatlybootstrap.css",
+        theme = "css/shinyflatlybootstrap.css",
 
         # Head linking to custom CSS tweaks
         tags$head(
-            tags$link(rel = "stylesheet", type = "text/css", href = "user.css")
+            tags$link(
+                rel = "stylesheet",
+                type = "text/css",
+                href = "css/user.css"
+            )
         ),
 
         navbarPage(
@@ -93,7 +97,9 @@ shinyApp(
                             "<em>P. aeruginosa</em>: PAO1, PA14, & LESB58."
                         )),
 
-                        tags$p("To get started, select one of the options below:"),
+                        tags$p(
+                            "To get started, select one of the options below:"
+                        ),
 
                         tags$br(),
 
@@ -102,7 +108,7 @@ shinyApp(
                                 "annoTabBtn",
                                 "Get Annotations & Sequences",
                                 class = "btn btn-default btn-lg",
-                                style = "color: #fff; background-color: #3498db; border-color: #3498db;"
+                                style = "color:#fff; background-color:#3498db; border-color:#3498db;"
                             ),
 
                             HTML("&nbsp;&nbsp;&nbsp;"),
@@ -111,7 +117,7 @@ shinyApp(
                                 "orthoTabBtn",
                                 "Perform Ortholog Mapping",
                                 class = "btn btn-default btn-lg",
-                                style = "color: #fff; background-color: #18bc9c; border-color: #18bc9c;"
+                                style = "color:#fff; background-color:#18bc9c; border-color:#18bc9c;"
                             )
                         )
                     )
@@ -120,10 +126,11 @@ shinyApp(
                 # Separate div to include the lab logo below the main section.
                 # Also made into a clickable link!
                 tags$div(
-                    style = "position:fixed; bottom:0px; padding-bottom: 10px",
-                    htmltools::HTML(
-                        "<a href='http://cmdr.ubc.ca/bobh/'> <img src = 'hancock-lab-logo.svg'> </a>"
-                    )
+                    style = "position:fixed; bottom:0px; padding-bottom:10px",
+                    htmltools::HTML(paste0(
+                        "<a href='http://cmdr.ubc.ca/bobh/'> ",
+                        "<img src = 'hancock-lab-logo.svg'> </a>"
+                    ))
                 )
             ),
 
@@ -200,7 +207,7 @@ shinyApp(
                             inputId = "annoSearch",
                             label = tags$b("Search"),
                             icon = icon("search"),
-                            style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px; float: right;"
+                            style = "color:#fff; background-color:#2c3e50; border-color:#2c3e50; width:100px; float:right;"
                         ),
 
                         tags$br(),
@@ -274,7 +281,7 @@ shinyApp(
 
                         # Choose strain 1
                         tags$div(
-                            style = "display: inline-block; vertical-align: top; width: 150px;",
+                            style = "display:inline-block; vertical-align:top; width:150px;",
                             selectInput(
                                 inputId = "strain1",
                                 label = "Mapping from:",
@@ -289,13 +296,13 @@ shinyApp(
 
                         # Separator since we have both drop downs on one "line"
                         tags$div(
-                            style = "display: inline-block; vertical-align: top; width: 100px;",
+                            style = "display:inline-block; vertical-align:top; width:100px;",
                             HTML("<br>")
                         ),
 
                         # Choose strain 2
                         tags$div(
-                            style = "display: inline-block; vertical-align: top; width: 150px;",
+                            style = "display:inline-block; vertical-align:top; width:150px;",
                             selectInput(
                                 inputId = "strain2",
                                 label = "Mappping to:",
@@ -331,7 +338,7 @@ shinyApp(
                             "orthoSearch",
                             tags$b("Map"),
                             icon = icon("search"),
-                            style = "color: #fff; background-color: #2c3e50; border-color: #2c3e50; width: 100px; float: right;"
+                            style = "color:#fff; background-color:#2c3e50; border-color:#2c3e50; width:100px; float:right;"
                         ),
 
                         tags$br(),
@@ -771,7 +778,7 @@ shinyApp(
                                 downloadButton(
                                     "annoResultTable_dl",
                                     tags$b("Annotations"),
-                                    style = "color: #fff; background-color: #3498db; border-color: #3498db; width: 200px"
+                                    style = "color:#fff; background-color:#3498db; border-color:#3498db; width:200px"
                                 ),
                                 tags$br(),
                                 tags$br(),
@@ -779,21 +786,21 @@ shinyApp(
                                 downloadButton(
                                     "annoNTSeqs_dl",
                                     tags$b("Nucleotide Sequences"),
-                                    style = "width: 200px; background-color: #75818c; border-color: #75818c"
+                                    style = "width:200px; background-color:#75818c; border-color:#75818c"
                                 ),
 
                                 # Divider so both sequence download buttons
                                 # render on the same line, with a small
                                 # separation between them.
                                 tags$div(
-                                    style = "display: inline-block; vertical-align: top; width: 10px;",
+                                    style = "display:inline-block; vertical-align:top; width:10px;",
                                     HTML("<br>")
                                 ),
 
                                 downloadButton(
                                     "annoAASeqs_dl",
                                     tags$b("Protein Sequences"),
-                                    style = "width: 200px; background-color: #75818c; border-color: #75818c"
+                                    style = "width:200px; background-color:#75818c; border-color:#75818c"
                                 )
                             )
                         )
@@ -802,8 +809,8 @@ shinyApp(
             })
         })
 
-        # Allow the user to take their input genes from the annotation tab and go
-        # straight to the ortholog tab
+        # Allow the user to take their input genes from the annotation tab and
+        # go straight to the ortholog tab
         observeEvent(input$switchToOrthos, {
 
             updateNavbarPage(
