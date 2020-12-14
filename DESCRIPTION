@@ -1,6 +1,6 @@
 Package: getPASequences
 Title: Repository for PATool App
-Version: 0.10.2
+Version: 0.10.3
 Authors@R: 
     person(given = "Travis",
            family = "Blimkie",

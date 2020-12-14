@@ -7,8 +7,8 @@
 
 library(shiny)
 
-# The file `global.R` loads a bunch of libraries and the data used by the app,
-# including the example data.
+# The file `global.R` loads the libraries and data used by the app, including
+# the example data.
 source("global.R", local = TRUE)
 import::from(
     "functions.R",
