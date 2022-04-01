@@ -3,8 +3,8 @@
 
 # Overview
 # ~~~~~~~~
-# This document will cover the steps needed to download and process the data files
-# used by the Shiny app.
+# This document will cover the steps needed to download and process the data
+# files used by the Shiny app.
 
 
 # Retrieving Annotation Files
